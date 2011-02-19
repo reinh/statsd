@@ -24,4 +24,11 @@ describe Statsd do
     end
   end
 
+  describe "#decrement" do
+    it "should format the message according to the statsd spec" do
+      @statsd.decrement('foobar')
+      @statsd.socket.recv.must_equal ['foobar:-1|c']
+    end
+  end
+
 end

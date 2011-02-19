@@ -8,6 +8,10 @@ class Statsd
     socket.send("#{stat}:1|c")
   end
 
+  def decrement(stat)
+    socket.send("#{stat}:-1|c")
+  end
+
   private
 
   def socket
