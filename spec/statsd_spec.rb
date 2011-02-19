@@ -9,7 +9,12 @@ describe Statsd do
 
   before do
     @statsd = Statsd.new('localhost', 1234)
+    class << @statsd
+      public :sampled # we need to test this
+      attr_reader :host, :port # we also need to test this
+    end
   end
+
   after { @statsd.socket.clear }
 
   describe "#initialize" do

@@ -9,8 +9,6 @@ require 'socket'
 #     statsd.increment 'garets'
 #     statsd.timing 'glork', 320
 class Statsd
-  attr_reader :host, :port
-
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
   def initialize(host, port)
@@ -35,15 +33,15 @@ class Statsd
   # @param [Integer] sample_rate sample rate, 1 for always
   def timing(stat, ms,    sample_rate=1); send stat, ms,    'ms', sample_rate end
 
+  private
+
   def sampled(sample_rate)
     return if sample_rate < 1 and rand > sample_rate
     yield
   end
 
-  private
-
   def send(stat, delta, type, sample_rate)
-    sampled(sample_rate) { socket.send("#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}", 0, host, port) }
+    sampled(sample_rate) { socket.send("#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}", 0, @host, @port) }
   end
 
   def socket; @socket ||= UDPSocket.new end
