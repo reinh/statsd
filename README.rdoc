@@ -1,6 +1,12 @@
 = statsd
 
-Description goes here.
+A Ruby statsd client (https://github.com/etsy/statsd)
+
+= Testing
+
+Run the specs with <tt>rake spec</tt>
+
+Run the specs and include live integration specs with <tt>LIVE=true rake spec</tt>. Note: This will test over a real UDP socket.
 
 == Contributing to statsd
  
@@ -16,4 +22,3 @@ Description goes here.
 
 Copyright (c) 2011 Rein Henrichs. See LICENSE.txt for
 further details.
-
