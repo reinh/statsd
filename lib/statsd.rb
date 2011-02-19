@@ -5,11 +5,15 @@ class Statsd
   end
 
   def increment(stat)
-    socket.send("#{stat}:1|c")
+    count stat, 1
   end
 
   def decrement(stat)
-    socket.send("#{stat}:-1|c")
+    count stat, -1
+  end
+
+  def count(stat, count)
+    socket.send("#{stat}:#{count}|c")
   end
 
   private
