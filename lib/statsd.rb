@@ -13,14 +13,18 @@ class Statsd
   end
 
   def count(stat, count)
-    socket.send("#{stat}:#{count}|c")
+    send(stat, count, 'c')
   end
 
   def timing(stat, ms)
-    socket.send("#{stat}:#{ms}|ms")
+    send(stat, ms, 'ms')
   end
 
   private
+
+  def send(stat, delta, type)
+    socket.send("#{stat}:#{delta}|#{type}")
+  end
 
   def socket
     @socket ||= UDPSocket.new(host, post)
