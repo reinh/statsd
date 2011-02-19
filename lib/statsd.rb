@@ -4,26 +4,34 @@ class Statsd
     @host, @port = host, port
   end
 
-  def increment(stat)
-    count stat, 1
+  def increment(stat, sample_rate=1)
+    count stat, 1, sample_rate
   end
 
-  def decrement(stat)
-    count stat, -1
+  def decrement(stat, sample_rate=1)
+    count stat, -1, sample_rate
   end
 
-  def count(stat, count)
-    send(stat, count, 'c')
+  def count(stat, count, sample_rate=1)
+    send stat, count, 'c', sample_rate
   end
 
-  def timing(stat, ms)
-    send(stat, ms, 'ms')
+  def timing(stat, ms, sample_rate=1)
+    send stat, ms, 'ms', sample_rate
+  end
+
+  def sampled(sample_rate)
+    if sample_rate < 1
+      yield if rand <= sample_rate
+    else
+      yield
+    end
   end
 
   private
 
-  def send(stat, delta, type)
-    socket.send("#{stat}:#{delta}|#{type}")
+  def send(stat, delta, type, sample_rate)
+    socket.send("#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}")
   end
 
   def socket
