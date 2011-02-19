@@ -1,17 +1,12 @@
 require 'spec/helper'
 
 describe Statsd do
-  class Statsd
-    def socket
-      @socket ||= FakeUDPSocket.new
-    end
-  end
-
   before do
     @statsd = Statsd.new('localhost', 1234)
     class << @statsd
       public :sampled # we need to test this
       attr_reader :host, :port # we also need to test this
+      def socket; @socket ||= FakeUDPSocket.new end
     end
   end
 
