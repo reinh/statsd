@@ -104,7 +104,6 @@ describe Statsd do
       socket.bind(host, port)
 
       statsd = Statsd.new(host, port)
-      p statsd.__send__(:socket)
       statsd.increment('foobar')
       message = socket.recvfrom(16).first
       message.must_equal 'foobar:1|c'
