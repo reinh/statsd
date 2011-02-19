@@ -31,4 +31,11 @@ describe Statsd do
     end
   end
 
+  describe "#timing" do
+    it "should format the message according to the statsd spec" do
+      @statsd.timing('foobar', 500)
+      @statsd.socket.recv.must_equal ['foobar:500|ms']
+    end
+  end
+
 end

@@ -16,6 +16,10 @@ class Statsd
     socket.send("#{stat}:#{count}|c")
   end
 
+  def timing(stat, ms)
+    socket.send("#{stat}:#{ms}|ms")
+  end
+
   private
 
   def socket
