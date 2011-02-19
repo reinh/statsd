@@ -7,6 +7,7 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
+
 require 'minitest/autorun'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))

@@ -21,17 +21,14 @@ class Statsd
   end
 
   def sampled(sample_rate)
-    if sample_rate < 1
-      yield if rand <= sample_rate
-    else
-      yield
-    end
+    return if sample_rate < 1 and rand > sample_rate
+    yield
   end
 
   private
 
   def send(stat, delta, type, sample_rate)
-    socket.send("#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}")
+    sampled(sample_rate) { socket.send("#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
   end
 
   def socket

@@ -7,7 +7,9 @@ describe Statsd do
     end
   end
 
-  before { @statsd = Statsd.new('localhost', 1234) }
+  before do
+    @statsd = Statsd.new('localhost', 1234)
+  end
   after { @statsd.socket.clear }
 
   describe "#initialize" do
@@ -17,6 +19,7 @@ describe Statsd do
     end
   end
 
+
   describe "#increment" do
     it "should format the message according to the statsd spec" do
       @statsd.increment('foobar')
@@ -24,6 +27,7 @@ describe Statsd do
     end
 
     describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end}
       it "should format the message according to the statsd spec" do
         @statsd.increment('foobar', 0.5)
         @statsd.socket.recv.must_equal ['foobar:1|c|@0.5']
@@ -38,6 +42,7 @@ describe Statsd do
     end
 
     describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end}
       it "should format the message according to the statsd spec" do
         @statsd.decrement('foobar', 0.5)
         @statsd.socket.recv.must_equal ['foobar:-1|c|@0.5']
@@ -52,6 +57,7 @@ describe Statsd do
     end
 
     describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end}
       it "should format the message according to the statsd spec" do
         @statsd.timing('foobar', 500, 0.5)
         @statsd.socket.recv.must_equal ['foobar:500|ms|@0.5']
