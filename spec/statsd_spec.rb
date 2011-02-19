@@ -32,7 +32,7 @@ describe Statsd do
         @statsd.increment('foobar', 0.5)
         @statsd.socket.recv.must_equal ['foobar:1|c|@0.5']
       end
-    end
+end
   end
 
   describe "#decrement" do
@@ -95,3 +95,19 @@ describe Statsd do
   end
 
 end
+
+describe Statsd do
+  describe "with a real UDP socket" do
+    it "should actually send stuff over the socket" do
+      socket = UDPSocket.new
+      host, port = 'localhost', 12345
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port)
+      p statsd.__send__(:socket)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+  end
+end if ENV['LIVE']

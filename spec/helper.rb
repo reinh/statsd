@@ -19,12 +19,12 @@ class FakeUDPSocket
     @buffer = []
   end
 
-  def send(*args)
-    @buffer.push args
+  def send(message, *rest)
+    @buffer.push [message]
   end
 
   def recv
-    @buffer.shift
+    res = @buffer.shift
   end
 
   def clear
@@ -36,6 +36,6 @@ class FakeUDPSocket
   end
 
   def inspect
-    @buffer.inspect
+    "<FakeUDPSocket: #{@buffer.inspect}>"
   end
 end
