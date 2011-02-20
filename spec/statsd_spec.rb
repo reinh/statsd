@@ -32,7 +32,7 @@ describe Statsd do
         @statsd.increment('foobar', 0.5)
         @statsd.socket.recv.must_equal ['foobar:1|c|@0.5']
       end
-end
+    end
   end
 
   describe "#decrement" do
