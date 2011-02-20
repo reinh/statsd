@@ -17,6 +17,10 @@ describe Statsd do
       @statsd.host.must_equal 'localhost'
       @statsd.port.must_equal 1234
     end
+
+    it "should default the port to 8125" do
+      Statsd.new('localhost').instance_variable_get('@port').must_equal 8125
+    end
   end
 
 

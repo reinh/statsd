@@ -11,7 +11,7 @@ require 'socket'
 class Statsd
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host, port)
+  def initialize(host, port=8125)
     @host, @port = host, port
   end
 
