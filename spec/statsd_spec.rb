@@ -74,14 +74,14 @@ describe Statsd do
 
     describe "when the sample rate is greater than a random value [0,1]" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
-      it "should not yield" do
+      it "should yield" do
         @statsd.sampled(0.5) { :yielded }.must_equal :yielded
       end
     end
 
     describe "when the sample rate is less than a random value [0,1]" do
       before { class << @statsd; def rand; 1; end; end } # ensure no delivery
-      it "should yield" do
+      it "should not yield" do
         @statsd.sampled(0.5) { :yielded }.must_equal nil
       end
     end
