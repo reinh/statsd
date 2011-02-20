@@ -93,7 +93,6 @@ describe Statsd do
       end
     end
   end
-
 end
 
 describe Statsd do

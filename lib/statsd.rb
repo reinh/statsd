@@ -36,8 +36,7 @@ class Statsd
   private
 
   def sampled(sample_rate)
-    return if sample_rate < 1 and rand > sample_rate
-    yield
+    yield unless sample_rate < 1 and rand > sample_rate
   end
 
   def send(stat, delta, type, sample_rate)
