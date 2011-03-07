@@ -5,9 +5,9 @@ $:.unshift lib unless $:.include?(lib)
 Gem::Specification.new do |s|
   s.name        = "statsd"
   s.version     = "0.0.1"
-  s.authors     = ["reinh", "aeden"]
-  s.email       = ["anthonyeden@gmail.com"]
-  s.homepage    = "https://github.com/aeden/statsd"
+  s.authors     = ["Rein Henrichs"]
+  s.email       = ["reinh@reinh.com"]
+  s.homepage    = "https://github.com/reinh/statsd"
   s.summary     = "ruby statsd client"
   s.description = "A Ruby statsd client"
    
