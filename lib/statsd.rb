@@ -33,6 +33,13 @@ class Statsd
   # @param [Integer] sample_rate sample rate, 1 for always
   def timing(stat, ms, sample_rate=1); send stat, ms, 'ms', sample_rate end
 
+  def time(stat, sample_rate=1)
+    start = Time.now
+    result = yield
+    timing(stat, ((Time.now - start) * 1000).round, sample_rate)
+    result
+  end
+
   private
 
   def sampled(sample_rate)
