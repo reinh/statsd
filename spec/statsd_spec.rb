@@ -97,6 +97,25 @@ describe Statsd do
       end
     end
   end
+
+  describe "with namespace" do
+    before { @statsd.namespace = 'service' }
+
+    it "should add namespace to increment" do
+      @statsd.increment('foobar')
+      @statsd.socket.recv.must_equal ['service.foobar:1|c']
+    end
+
+    it "should add namespace to decrement" do
+      @statsd.decrement('foobar')
+      @statsd.socket.recv.must_equal ['service.foobar:-1|c']
+    end
+
+    it "should add namespace to timing" do
+      @statsd.timing('foobar', 500)
+      @statsd.socket.recv.must_equal ['service.foobar:500|ms']
+    end
+  end
 end
 
 describe Statsd do
