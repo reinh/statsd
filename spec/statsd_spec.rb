@@ -1,4 +1,4 @@
-require 'spec/helper'
+require 'helper'
 
 describe Statsd do
   before do
@@ -22,7 +22,6 @@ describe Statsd do
       Statsd.new('localhost').instance_variable_get('@port').must_equal 8125
     end
   end
-
 
   describe "#increment" do
     it "should format the message according to the statsd spec" do
@@ -69,6 +68,27 @@ describe Statsd do
     end
   end
 
+  describe "#time" do
+    it "should format the message according to the statsd spec" do
+      @statsd.time('foobar') { sleep(0.001); 'test' }
+      @statsd.socket.recv.must_equal ['foobar:1|ms']
+    end
+
+    it "should return the result of the block" do
+      result = @statsd.time('foobar') { sleep(0.001); 'test' }
+      result.must_equal 'test'
+    end
+
+    describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+
+      it "should format the message according to the statsd spec" do
+        result = @statsd.time('foobar', 0.5) { sleep(0.001); 'test' }
+        @statsd.socket.recv.must_equal ['foobar:1|ms|@0.5']
+      end
+    end
+  end
+
   describe "#sampled" do
     describe "when the sample rate is 1" do
       it "should yield" do
@@ -95,6 +115,25 @@ describe Statsd do
       it "should yield" do
         @statsd.sampled(0.5) { :yielded }.must_equal :yielded
       end
+    end
+  end
+
+  describe "with namespace" do
+    before { @statsd.namespace = 'service' }
+
+    it "should add namespace to increment" do
+      @statsd.increment('foobar')
+      @statsd.socket.recv.must_equal ['service.foobar:1|c']
+    end
+
+    it "should add namespace to decrement" do
+      @statsd.decrement('foobar')
+      @statsd.socket.recv.must_equal ['service.foobar:-1|c']
+    end
+
+    it "should add namespace to timing" do
+      @statsd.timing('foobar', 500)
+      @statsd.socket.recv.must_equal ['service.foobar:500|ms']
     end
   end
 end
