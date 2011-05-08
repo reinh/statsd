@@ -21,6 +21,13 @@ describe Statsd do
     it "should default the port to 8125" do
       Statsd.new('localhost').instance_variable_get('@port').must_equal 8125
     end
+
+    it "should yield itself for further configuration, e.g. namespace" do
+      statsd = Statsd.new('localhost') do |s|
+        s.namespace = "a.b"
+      end
+      statsd.namespace.must_equal "a.b"
+    end
   end
 
   describe "#increment" do

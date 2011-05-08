@@ -15,6 +15,7 @@ class Statsd
   # @param [Integer] port your statsd port
   def initialize(host, port=8125)
     @host, @port = host, port
+    yield self if block_given?
   end
 
   # @param [String] stat stat name
