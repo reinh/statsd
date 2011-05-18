@@ -157,6 +157,21 @@ describe Statsd do
       @log.string.must_be_empty
     end
 
+    describe "while disabled" do
+      before { @statsd.enabled = false }
+
+      it "should be disabled" do
+        @statsd.enabled.must_equal false
+        @statsd.enabled?.must_equal false
+      end
+
+      it "should not send data to the socket but should still log" do
+        @statsd.increment('foo', 1)
+        @statsd.socket.recv.must_be_nil
+        @log.string.must_match "Statsd: foo:1|c"
+      end
+
+    end
   end
 
   describe "stat names" do
