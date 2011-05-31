@@ -16,6 +16,9 @@ class Statsd
   # A namespace to prepend to all statsd calls.
   attr_accessor :namespace
 
+  #characters that will be replaced with _ in stat names
+  RESERVED_CHARS_REGEX = /[\:\|\@]/
+  
   class << self
     # Set to any standard logger instance (including stdlib's Logger) to enable
     # stat logging using logger.debug
@@ -82,6 +85,7 @@ class Statsd
 
   def send(stat, delta, type, sample_rate)
     prefix = "#{@namespace}." unless @namespace.nil?
+    stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
     sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
   end
 

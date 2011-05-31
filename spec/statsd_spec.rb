@@ -158,6 +158,27 @@ describe Statsd do
     end
 
   end
+
+  describe "stat names" do
+
+    it "should accept anything as stat" do
+      @statsd.increment(Object, 1)
+    end
+
+    it "should replace ruby constant delimeter with graphite package name" do
+      class Statsd::SomeClass; end
+      @statsd.increment(Statsd::SomeClass, 1)
+
+      @statsd.socket.recv.must_equal ['Statsd.SomeClass:1|c']
+    end
+
+    it "should replace statsd reserved chars in the stat name" do
+      @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
+      @statsd.socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
+    end
+
+  end
+
 end
 
 describe Statsd do
