@@ -136,6 +136,28 @@ describe Statsd do
       @statsd.socket.recv.must_equal ['service.foobar:500|ms']
     end
   end
+
+  describe "with logging" do
+    require 'stringio'
+    before { Statsd.logger = Logger.new(@log = StringIO.new)}
+
+    it "should write to the log in debug" do
+      Statsd.logger.level = Logger::DEBUG
+
+      @statsd.increment('foobar')
+
+      @log.string.must_match "Statsd: foobar:1|c"
+    end
+
+    it "should not write to the log unless debug" do
+      Statsd.logger.level = Logger::INFO
+
+      @statsd.increment('foobar')
+
+      @log.string.must_be_empty
+    end
+
+  end
 end
 
 describe Statsd do
