@@ -4,7 +4,7 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "statsd"
+  gem.name = "statsd-ruby"
   gem.homepage = "http://github.com/reinh/statsd"
   gem.license = "MIT"
   gem.summary = %Q{A Statsd client in Ruby}
