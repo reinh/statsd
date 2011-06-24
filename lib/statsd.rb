@@ -15,7 +15,6 @@ require 'socket'
 class Statsd
   # A namespace to prepend to all statsd calls.
   attr_accessor :namespace
-  attr_accessor :enabled
 
   #characters that will be replaced with _ in stat names
   RESERVED_CHARS_REGEX = /[\:\|\@]/
@@ -28,8 +27,8 @@ class Statsd
   
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host, port=8125, enabled=true)
-    @host, @port, @enabled = host, port, enabled
+  def initialize(host, port=8125)
+    @host, @port = host, port
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server. 
@@ -78,8 +77,6 @@ class Statsd
     result
   end
 
-  def enabled?; enabled end
-
   private
 
   def sampled(sample_rate)
@@ -94,7 +91,7 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
-    socket.send(message, 0, @host, @port) if @enabled
+    socket.send(message, 0, @host, @port)
   end
 
   def socket; @socket ||= UDPSocket.new end
