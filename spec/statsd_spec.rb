@@ -136,6 +136,49 @@ describe Statsd do
       @statsd.socket.recv.must_equal ['service.foobar:500|ms']
     end
   end
+
+  describe "with logging" do
+    require 'stringio'
+    before { Statsd.logger = Logger.new(@log = StringIO.new)}
+
+    it "should write to the log in debug" do
+      Statsd.logger.level = Logger::DEBUG
+
+      @statsd.increment('foobar')
+
+      @log.string.must_match "Statsd: foobar:1|c"
+    end
+
+    it "should not write to the log unless debug" do
+      Statsd.logger.level = Logger::INFO
+
+      @statsd.increment('foobar')
+
+      @log.string.must_be_empty
+    end
+
+  end
+
+  describe "stat names" do
+
+    it "should accept anything as stat" do
+      @statsd.increment(Object, 1)
+    end
+
+    it "should replace ruby constant delimeter with graphite package name" do
+      class Statsd::SomeClass; end
+      @statsd.increment(Statsd::SomeClass, 1)
+
+      @statsd.socket.recv.must_equal ['Statsd.SomeClass:1|c']
+    end
+
+    it "should replace statsd reserved chars in the stat name" do
+      @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
+      @statsd.socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
+    end
+
+  end
+
 end
 
 describe Statsd do
