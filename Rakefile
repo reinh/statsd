@@ -30,6 +30,7 @@ Rcov::RcovTask.new do |spec|
   spec.libs << 'lib' << 'spec'
   spec.pattern = 'spec/**/*_spec.rb'
   spec.verbose = true
+  spec.rcov_opts << "--exclude spec,gems"
 end
 
 task :default => :spec
