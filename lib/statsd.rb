@@ -18,27 +18,27 @@ class Statsd
 
   #characters that will be replaced with _ in stat names
   RESERVED_CHARS_REGEX = /[\:\|\@]/
-  
+
   class << self
     # Set to any standard logger instance (including stdlib's Logger) to enable
     # stat logging using logger.debug
     attr_accessor :logger
   end
-  
+
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
   def initialize(host, port=8125)
     @host, @port = host, port
   end
 
-  # Sends an increment (count = 1) for the given stat to the statsd server. 
+  # Sends an increment (count = 1) for the given stat to the statsd server.
   #
   # @param stat (see #count)
   # @param sample_rate (see #count)
   # @see #count
   def increment(stat, sample_rate=1); count stat, 1, sample_rate end
 
-  # Sends a decrement (count = -1) for the given stat to the statsd server. 
+  # Sends a decrement (count = -1) for the given stat to the statsd server.
   #
   # @param stat (see #count)
   # @param sample_rate (see #count)
