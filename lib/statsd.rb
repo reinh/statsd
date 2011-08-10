@@ -52,6 +52,16 @@ class Statsd
   # @param [Integer] sample_rate sample rate, 1 for always
   def count(stat, count, sample_rate=1); send stat, count, 'c', sample_rate end
 
+  # Sends an arbitary gauge value for the given stat to the statsd server.
+  #
+  # @param [String] stat stat name.
+  # @param [Numeric] gauge value.
+  # @example Report the current user count:
+  #   $statsd.gauge('user.count', User.count)
+  def gauge(stat, value)
+    send stat, value, 'g'
+  end
+
   # Sends a timing (in ms) for the given stat to the statsd server. The
   # sample_rate determines what percentage of the time this report is sent. The
   # statsd server then uses the sample_rate to correctly track the average
