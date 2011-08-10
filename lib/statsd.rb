@@ -93,7 +93,7 @@ class Statsd
     yield unless sample_rate < 1 and rand > sample_rate
   end
 
-  def send(stat, delta, type, sample_rate)
+  def send(stat, delta, type, sample_rate=1)
     prefix = "#{@namespace}." unless @namespace.nil?
     stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
     sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
