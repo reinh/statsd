@@ -77,6 +77,15 @@ class Statsd
     result
   end
 
+  # Reports a gauge value (github.com/nearbuy/statsd fork).
+  # This is useful for recording things like available disk space,
+  # memory usage, and the like, which have different semantics than
+  # counters.
+  #
+  # @param stat stat name
+  # @param value The current value of the stat.
+  def gauge(stat, value); send stat, value, 'g', 1 end
+
   private
 
   def sampled(sample_rate)
