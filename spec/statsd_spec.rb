@@ -23,6 +23,17 @@ describe Statsd do
     end
   end
 
+  describe "#enabled" do
+    it "should default to true" do
+      @statsd.enabled.must_equal true
+    end
+
+    it "can be disabled" do
+      @statsd.enabled = false
+      @statsd.enabled.must_equal false
+    end
+  end
+
   describe "#increment" do
     it "should format the message according to the statsd spec" do
       @statsd.increment('foobar')
@@ -34,6 +45,15 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.increment('foobar', 0.5)
         @statsd.socket.recv.must_equal ['foobar:1|c|@0.5']
+      end
+    end
+
+    describe "when disabled" do
+      before { @statsd.enabled = false }
+
+      it "should send nothing" do
+        @statsd.increment('foobar')
+        @statsd.socket.recv.must_equal nil
       end
     end
   end
