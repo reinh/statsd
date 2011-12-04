@@ -17,7 +17,8 @@ class Statsd
   attr_reader :namespace
 
   # StatsD host. Defaults to 127.0.0.1.
-  attr_accessor :host
+  # Setting a hostname resolves to an IP address to avoid excess DNS lookups.
+  attr_reader :host
 
   # StatsD port. Defaults to 8125.
   attr_accessor :port
@@ -37,7 +38,7 @@ class Statsd
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
   def initialize(host='127.0.0.1', port=8125)
-    @host, @port = host, port
+    self.host, self.port = host, port
     @prefix = nil
     @socket = UDPSocket.new
   end
@@ -45,6 +46,17 @@ class Statsd
   def namespace=(namespace) #:nodoc:
     @namespace = namespace
     @prefix = "#{namespace}."
+  end
+
+  # If the argument is a hostname, resolve it to an IP address.
+  def host=(host) #:nodoc:
+    require 'ipaddr'
+    begin
+      @host = IPAddr.new(host).to_s
+    rescue ArgumentError
+      require 'resolv'
+      @host = Resolv.getaddress(host)
+    end
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.

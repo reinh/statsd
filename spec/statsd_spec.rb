@@ -7,7 +7,7 @@ describe Statsd do
   end
 
   before do
-    @statsd = Statsd.new('localhost', 1234)
+    @statsd = Statsd.new('1.2.3.4', 1234)
     @statsd.socket = FakeUDPSocket.new
   end
 
@@ -15,7 +15,7 @@ describe Statsd do
 
   describe "#initialize" do
     it "should set the host and port" do
-      @statsd.host.must_equal 'localhost'
+      @statsd.host.must_equal '1.2.3.4'
       @statsd.port.must_equal 1234
     end
 
@@ -27,11 +27,18 @@ describe Statsd do
   end
 
   describe "#host and #port" do
+    before { require 'resolv'; def Resolv.getaddress(host) '127.0.0.1' end }
+
     it "should set host and port" do
-      @statsd.host = '1.2.3.4'
+      @statsd.host = '5.6.7.8'
       @statsd.port = 5678
-      @statsd.host.must_equal '1.2.3.4'
+      @statsd.host.must_equal '5.6.7.8'
       @statsd.port.must_equal 5678
+    end
+
+    it "should resolve hostnames to IPs" do
+      @statsd.host = 'localhost'
+      @statsd.host.must_equal '127.0.0.1'
     end
   end
 
