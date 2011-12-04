@@ -33,15 +33,15 @@ class Statsd
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
   #
-  # @param stat (see #count)
-  # @param sample_rate (see #count)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @see #count
   def increment(stat, sample_rate=1); count stat, 1, sample_rate end
 
   # Sends a decrement (count = -1) for the given stat to the statsd server.
   #
-  # @param stat (see #count)
-  # @param sample_rate (see #count)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @see #count
   def decrement(stat, sample_rate=1); count stat, -1, sample_rate end
 
@@ -49,7 +49,7 @@ class Statsd
   #
   # @param [String] stat stat name
   # @param [Integer] count count
-  # @param [Integer] sample_rate sample rate, 1 for always
+  # @param [Numeric] sample_rate sample rate, 1 for always
   def count(stat, count, sample_rate=1); send stat, count, 'c', sample_rate end
 
   # Sends an arbitary gauge value for the given stat to the statsd server.
@@ -72,15 +72,15 @@ class Statsd
   # statsd server then uses the sample_rate to correctly track the average
   # timing for the stat.
   #
-  # @param stat stat name
+  # @param [String] stat stat name
   # @param [Integer] ms timing in milliseconds
-  # @param [Integer] sample_rate sample rate, 1 for always
+  # @param [Numeric] sample_rate sample rate, 1 for always
   def timing(stat, ms, sample_rate=1); send stat, ms, 'ms', sample_rate end
 
   # Reports execution time of the provided block using {#timing}.
   #
-  # @param stat (see #timing)
-  # @param sample_rate (see #timing)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @yield The operation to be timed
   # @see #timing
   # @example Report the time (in ms) taken to activate an account
