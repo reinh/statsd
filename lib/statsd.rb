@@ -50,12 +50,16 @@ class Statsd
 
   # If the argument is a hostname, resolve it to an IP address.
   def host=(host) #:nodoc:
-    require 'ipaddr'
-    begin
-      @host = IPAddr.new(host).to_s
-    rescue ArgumentError
-      require 'resolv'
-      @host = Resolv.getaddress(host)
+    if host
+      require 'ipaddr'
+      begin
+        @host = IPAddr.new(host).to_s
+      rescue ArgumentError
+        require 'resolv'
+        @host = Resolv.getaddress(host)
+      end
+    else
+      @host = nil
     end
   end
 

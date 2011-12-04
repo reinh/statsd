@@ -40,6 +40,11 @@ describe Statsd do
       @statsd.host = 'localhost'
       @statsd.host.must_equal '127.0.0.1'
     end
+
+    it "should not resolve nil host" do
+      @statsd.host = nil
+      @statsd.host.must_equal nil
+    end
   end
 
   describe "#increment" do
