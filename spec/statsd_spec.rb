@@ -1,12 +1,15 @@
 require 'helper'
 
 describe Statsd do
+  class TestStatsd < Statsd
+    # we need to test these
+    attr_reader :host, :port
+    attr_accessor :socket
+  end
+
   before do
-    @statsd = Statsd.new('localhost', 1234)
-    class << @statsd
-      attr_reader :host, :port # we also need to test this
-      def socket; @socket ||= FakeUDPSocket.new end
-    end
+    @statsd = TestStatsd.new('localhost', 1234)
+    @statsd.socket = FakeUDPSocket.new
   end
 
   after { @statsd.socket.clear }
@@ -159,10 +162,10 @@ describe Statsd do
 
   describe "with logging" do
     require 'stringio'
-    before { Statsd.logger = Logger.new(@log = StringIO.new)}
+    before { TestStatsd.logger = Logger.new(@log = StringIO.new)}
 
     it "should write to the log in debug" do
-      Statsd.logger.level = Logger::DEBUG
+      TestStatsd.logger.level = Logger::DEBUG
 
       @statsd.increment('foobar')
 
@@ -170,7 +173,7 @@ describe Statsd do
     end
 
     it "should not write to the log unless debug" do
-      Statsd.logger.level = Logger::INFO
+      TestStatsd.logger.level = Logger::INFO
 
       @statsd.increment('foobar')
 

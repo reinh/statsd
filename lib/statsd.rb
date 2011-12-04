@@ -27,6 +27,7 @@ class Statsd
   def initialize(host, port=8125)
     @host, @port = host, port
     @prefix = nil
+    @socket = UDPSocket.new
   end
 
   def namespace=(namespace) #:nodoc:
@@ -109,10 +110,8 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
-    socket.send(message, 0, @host, @port)
+    @socket.send(message, 0, @host, @port)
   rescue => boom
     self.class.logger.error {"Statsd: #{boom.class} #{boom}"} if self.class.logger
   end
-
-  def socket; @socket ||= UDPSocket.new end
 end
