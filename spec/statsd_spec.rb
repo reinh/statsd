@@ -53,6 +53,15 @@ describe Statsd do
     end
   end
 
+  describe "#gauge" do
+    it "should send a message with a 'g' type, per the nearbuy fork" do
+      @statsd.gauge('begrutten-suffusion', 536)
+      @statsd.socket.recv.must_equal ['begrutten-suffusion:536|g']
+      @statsd.gauge('begrutten-suffusion', -107.3)
+      @statsd.socket.recv.must_equal ['begrutten-suffusion:-107.3|g']
+    end
+  end
+
   describe "#timing" do
     it "should format the message according to the statsd spec" do
       @statsd.timing('foobar', 500)

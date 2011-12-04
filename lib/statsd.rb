@@ -54,6 +54,10 @@ class Statsd
 
   # Sends an arbitary gauge value for the given stat to the statsd server.
   #
+  # This is useful for recording things like available disk space,
+  # memory usage, and the like, which have different semantics than
+  # counters.
+  #
   # @param [String] stat stat name.
   # @param [Numeric] gauge value.
   # @example Report the current user count:
