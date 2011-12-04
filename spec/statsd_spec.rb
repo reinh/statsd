@@ -4,7 +4,6 @@ describe Statsd do
   before do
     @statsd = Statsd.new('localhost', 1234)
     class << @statsd
-      public :sampled # we need to test this
       attr_reader :host, :port # we also need to test this
       def socket; @socket ||= FakeUDPSocket.new end
     end
@@ -108,29 +107,33 @@ describe Statsd do
 
   describe "#sampled" do
     describe "when the sample rate is 1" do
-      it "should yield" do
-        @statsd.sampled(1) { :yielded }.must_equal :yielded
+      before { class << @statsd; def rand; raise end; end }
+      it "should send" do
+        @statsd.timing('foobar', 500, 1)
+        @statsd.socket.recv.must_equal ['foobar:500|ms']
       end
     end
 
     describe "when the sample rate is greater than a random value [0,1]" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
-      it "should yield" do
-        @statsd.sampled(0.5) { :yielded }.must_equal :yielded
+      it "should send" do
+        @statsd.timing('foobar', 500, 0.5)
+        @statsd.socket.recv.must_equal ['foobar:500|ms|@0.5']
       end
     end
 
     describe "when the sample rate is less than a random value [0,1]" do
       before { class << @statsd; def rand; 1; end; end } # ensure no delivery
-      it "should not yield" do
-        @statsd.sampled(0.5) { :yielded }.must_equal nil
+      it "should not send" do
+        @statsd.timing('foobar', 500, 0.5).must_equal nil
       end
     end
 
     describe "when the sample rate is equal to a random value [0,1]" do
-      before { class << @statsd; def rand; 0.5; end; end } # ensure delivery
-      it "should yield" do
-        @statsd.sampled(0.5) { :yielded }.must_equal :yielded
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should send" do
+        @statsd.timing('foobar', 500, 0.5)
+        @statsd.socket.recv.must_equal ['foobar:500|ms|@0.5']
       end
     end
   end

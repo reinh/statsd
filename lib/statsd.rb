@@ -97,15 +97,14 @@ class Statsd
 
   private
 
-  def sampled(sample_rate)
-    yield unless sample_rate < 1 and rand > sample_rate
-  end
-
   def send(stat, delta, type, sample_rate=1)
     # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
     stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
 
-    sampled(sample_rate) { send_to_socket("#{@prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
+    if sample_rate == 1 or rand < sample_rate
+      rate = "|@#{sample_rate}" unless sample_rate == 1
+      send_to_socket "#{@prefix}#{stat}:#{delta}|#{type}#{rate}"
+    end
   end
 
   def send_to_socket(message)
