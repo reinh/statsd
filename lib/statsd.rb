@@ -16,6 +16,12 @@ class Statsd
   # A namespace to prepend to all statsd calls.
   attr_reader :namespace
 
+  # StatsD host. Defaults to 127.0.0.1.
+  attr_accessor :host
+
+  # StatsD port. Defaults to 8125.
+  attr_accessor :port
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_reader :logger
@@ -30,7 +36,7 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host, port=8125)
+  def initialize(host='127.0.0.1', port=8125)
     @host, @port = host, port
     @prefix = nil
     @socket = UDPSocket.new

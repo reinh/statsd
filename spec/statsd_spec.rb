@@ -2,8 +2,7 @@ require 'helper'
 
 describe Statsd do
   class Statsd
-    # we need to test these
-    attr_reader :host, :port
+    # we need to stub this
     attr_accessor :socket
   end
 
@@ -20,8 +19,19 @@ describe Statsd do
       @statsd.port.must_equal 1234
     end
 
-    it "should default the port to 8125" do
-      Statsd.new('localhost').instance_variable_get('@port').must_equal 8125
+    it "should default the host to 127.0.0.1 and port to 8125" do
+      statsd = Statsd.new
+      statsd.host.must_equal '127.0.0.1'
+      statsd.port.must_equal 8125
+    end
+  end
+
+  describe "#host and #port" do
+    it "should set host and port" do
+      @statsd.host = '1.2.3.4'
+      @statsd.port = 5678
+      @statsd.host.must_equal '1.2.3.4'
+      @statsd.port.must_equal 5678
     end
   end
 
