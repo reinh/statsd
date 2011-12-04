@@ -14,7 +14,7 @@ require 'socket'
 #   statsd.increment 'activate'
 class Statsd
   # A namespace to prepend to all statsd calls.
-  attr_accessor :namespace
+  attr_reader :namespace
 
   class << self
     # Set to any standard logger instance (including stdlib's Logger) to enable
@@ -26,6 +26,12 @@ class Statsd
   # @param [Integer] port your statsd port
   def initialize(host, port=8125)
     @host, @port = host, port
+    @prefix = nil
+  end
+
+  def namespace=(namespace) #:nodoc:
+    @namespace = namespace
+    @prefix = "#{namespace}."
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
@@ -96,12 +102,10 @@ class Statsd
   end
 
   def send(stat, delta, type, sample_rate=1)
-    prefix = "#{@namespace}." unless @namespace.nil?
-
     # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
     stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
 
-    sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
+    sampled(sample_rate) { send_to_socket("#{@prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
   end
 
   def send_to_socket(message)
