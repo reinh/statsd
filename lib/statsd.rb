@@ -122,9 +122,12 @@ class Statsd
     end
   end
 
-  def send_to_socket(message)
-    @socket.send(message, 0, @host, @port)
+  module Sending
+    def send_to_socket(message)
+      @socket.send(message, 0, @host, @port)
+    end
   end
+  include Sending
 
   module Logging
     def send_to_socket(message)
