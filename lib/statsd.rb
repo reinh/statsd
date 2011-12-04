@@ -37,7 +37,7 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host='127.0.0.1', port=8125)
+  def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
     @prefix = nil
     @socket = UDPSocket.new
@@ -59,8 +59,12 @@ class Statsd
         @host = Resolv.getaddress(host)
       end
     else
-      @host = nil
+      @host = '127.0.0.1'
     end
+  end
+
+  def port=(port) #:nodoc:
+    @port = port || 8125
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.

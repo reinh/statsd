@@ -41,9 +41,14 @@ describe Statsd do
       @statsd.host.must_equal '127.0.0.1'
     end
 
-    it "should not resolve nil host" do
+    it "should set nil host to default" do
       @statsd.host = nil
-      @statsd.host.must_equal nil
+      @statsd.host.must_equal '127.0.0.1'
+    end
+
+    it "should set nil port to default" do
+      @statsd.port = nil
+      @statsd.port.must_equal 8125
     end
   end
 
