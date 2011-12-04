@@ -60,10 +60,11 @@ class Statsd
   #
   # @param [String] stat stat name.
   # @param [Numeric] gauge value.
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @example Report the current user count:
   #   $statsd.gauge('user.count', User.count)
-  def gauge(stat, value)
-    send stat, value, 'g'
+  def gauge(stat, value, sample_rate=1)
+    send stat, value, 'g', sample_rate
   end
 
   # Sends a timing (in ms) for the given stat to the statsd server. The

@@ -60,6 +60,14 @@ describe Statsd do
       @statsd.gauge('begrutten-suffusion', -107.3)
       @statsd.socket.recv.must_equal ['begrutten-suffusion:-107.3|g']
     end
+
+    describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.gauge('begrutten-suffusion', 536, 0.1)
+        @statsd.socket.recv.must_equal ['begrutten-suffusion:536|g|@0.1']
+      end
+    end
   end
 
   describe "#timing" do
