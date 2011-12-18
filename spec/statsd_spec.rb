@@ -23,19 +23,17 @@ describe Statsd do
     end
 
     it "should fail silently when encountering an error on send" do
-      def @statsd.socket; raise(SocketError) end
-
-      @statsd.send('bad signature').must_equal false
+      @statsd.socket.break!
+      assert_equal false, @statsd.increment('foobar')
     end
 
     it "should log the exception when a logger is provided" do
-      def @statsd.socket; raise(SocketError) end
-
+      @statsd.socket.break!
       log            = StringIO.new
       @statsd.logger = Logger.new(log)
-      @statsd.send('bad signature')
 
-      log.string.must_match 'Statsd: wrong number of arguments'
+      @statsd.increment('foobar')
+      log.string.must_match 'Statsd: SocketError'
     end
   end
 
