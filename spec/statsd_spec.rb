@@ -12,6 +12,33 @@ describe Statsd do
 
   after { @statsd.socket.clear }
 
+  describe "Exception handling" do
+    before do
+      @statsd.extend(Statsd::ExceptionHandling)
+    end
+
+    it "should send messages when there are no exceptions" do
+      @statsd.increment('foobar')
+      @statsd.socket.recv.must_equal ['foobar:1|c']
+    end
+
+    it "should fail silently when encountering an error on send" do
+      def @statsd.socket; raise(SocketError) end
+
+      @statsd.send('bad signature').must_equal false
+    end
+
+    it "should log the exception when a logger is provided" do
+      def @statsd.socket; raise(SocketError) end
+
+      log            = StringIO.new
+      @statsd.logger = Logger.new(log)
+      @statsd.send('bad signature')
+
+      log.string.must_match 'Statsd: wrong number of arguments'
+    end
+  end
+
   describe "#initialize" do
     it "should set the host and port" do
       @statsd.host.must_equal 'localhost'
