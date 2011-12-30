@@ -94,9 +94,11 @@ class Statsd
   end
 
   def send(stat, delta, type, sample_rate=1)
-    prefix = "#{@namespace}." unless @namespace.nil?
-    stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
-    sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
+    sampled(sample_rate) do
+      prefix = "#{@namespace}." unless @namespace.nil?
+      stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
+      send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}")
+    end
   end
 
   def send_to_socket(message)
