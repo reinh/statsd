@@ -91,7 +91,8 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
-    socket.send(message, 0, @host, @port)
+    return unless @host # Don't try to send if there is no host; we are effectively disabled
+    socket.send(message, 0, @host, @port) rescue false # Under no circumstances fail if we can't send the metric
   end
 
   def socket; @socket ||= UDPSocket.new end
