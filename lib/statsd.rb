@@ -90,6 +90,7 @@ class Statsd
   end
 
   def send_to_socket(message)
+    puts "statsd: #{message}"
     self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
     return unless @host # Don't try to send if there is no host; we are effectively disabled
     socket.send(message, 0, @host, @port) rescue false # Under no circumstances fail if we can't send the metric
