@@ -27,8 +27,8 @@ class Statsd
   
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host, port=8125)
-    @host, @port = host, port
+  def initialize(host, port=8125, ns=nil)
+    @host, @port, namespace = host, port, ns
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server. 
