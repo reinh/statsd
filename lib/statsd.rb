@@ -13,9 +13,6 @@ require 'socket'
 #   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
 #   statsd.increment 'activate'
 class Statsd
-  # A namespace to prepend to all statsd calls.
-  attr_accessor :namespace
-
   #characters that will be replaced with _ in stat names
   RESERVED_CHARS_REGEX = /[\:\|\@]/
   
@@ -28,7 +25,7 @@ class Statsd
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
   def initialize(host, port=8125, ns=nil)
-    @host, @port, namespace = host, port, ns
+    @host, @port, @namespace = host, port, ns
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server. 
@@ -90,6 +87,7 @@ class Statsd
   end
 
   def send_to_socket(message)
+    # puts "Statsd (#{@host}:#{@port}) #{message}"
     self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
     return unless @host # Don't try to send if there is no host; we are effectively disabled
     socket.send(message, 0, @host, @port) rescue false # Under no circumstances fail if we can't send the metric
