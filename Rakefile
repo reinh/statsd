@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'rake'
+require 'bundler/setup'
 
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
@@ -13,7 +13,7 @@ Jeweler::Tasks.new do |gem|
   gem.authors = ["Rein Henrichs"]
   gem.add_development_dependency "minitest", ">= 0"
   gem.add_development_dependency "yard", "~> 0.6.0"
-  gem.add_development_dependency "jeweler", "~> 1.5.2"
+  gem.add_development_dependency "jeweler", "~> 1.8"
   gem.add_development_dependency "rcov", ">= 0"
 end
 Jeweler::RubygemsDotOrgTasks.new
