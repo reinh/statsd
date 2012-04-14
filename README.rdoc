@@ -1,6 +1,6 @@
 = statsd-ruby {<img src="https://secure.travis-ci.org/jeremy/statsd-ruby.png" />}[http://travis-ci.org/jeremy/statsd-ruby]
 
-A Ruby statsd client (https://github.com/etsy/statsd)
+A Ruby client for {StatsD}[https://github.com/etsy/statsd]
 
 = Testing
 
