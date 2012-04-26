@@ -2,6 +2,11 @@
 
 A Ruby client for {StatsD}[https://github.com/etsy/statsd]
 
+= Installing
+
+Bundler:
+  gem "statsd-ruby", :require => "statsd"
+
 = Testing
 
 Run the specs with <tt>rake spec</tt>
