@@ -62,6 +62,13 @@ class Statsd
   # @param [Integer] sample_rate sample rate, 1 for always
   def timing(stat, ms, sample_rate=1); send stat, ms, 'ms', sample_rate end
 
+  # Sends a gauge value for the given stat to the statsd server.
+  #
+  # @param [String] stat stat name
+  # @param [Integer] value value
+  # @param [Integer] sample_rate sample rate, 1 for always
+  def gauge(stat, value, sample_rate=1); send stat, value, 'g', sample_rate end
+
   # Reports execution time of the provided block using {#timing}.
   #
   # @param stat (see #timing)
