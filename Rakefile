@@ -14,7 +14,7 @@ Jeweler::Tasks.new do |gem|
   gem.add_development_dependency "minitest", ">= 0"
   gem.add_development_dependency "yard", "~> 0.6.0"
   gem.add_development_dependency "jeweler", "~> 1.5.2"
-  gem.add_development_dependency "rcov", ">= 0"
+  gem.add_development_dependency "simplecov", ">= 0"
 end
 Jeweler::RubygemsDotOrgTasks.new
 
@@ -23,14 +23,6 @@ Rake::TestTask.new(:spec) do |spec|
   spec.libs << 'lib' << 'spec'
   spec.pattern = 'spec/**/*_spec.rb'
   spec.verbose = true
-end
-
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
-  spec.verbose = true
-  spec.rcov_opts << "--exclude spec,gems"
 end
 
 task :default => :spec
