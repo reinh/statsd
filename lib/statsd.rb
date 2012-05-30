@@ -66,8 +66,7 @@ class Statsd
   #
   # @param [String] stat stat name
   # @param [Integer] value value
-  # @param [Integer] sample_rate sample rate, 1 for always
-  def gauge(stat, value, sample_rate=1); send stat, value, 'g', sample_rate end
+  def gauge(stat, value); send stat, value, 'g' end
 
   # Reports execution time of the provided block using {#timing}.
   #
@@ -93,7 +92,7 @@ class Statsd
   def send(stat, delta, type, sample_rate)
     prefix = "#{@namespace}." unless @namespace.nil?
     stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
-    sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}") }
+    sampled(sample_rate) { send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate && sample_rate < 1}") }
   end
 
   def send_to_socket(message)
