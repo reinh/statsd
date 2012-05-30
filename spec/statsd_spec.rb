@@ -183,6 +183,11 @@ describe Statsd do
       @statsd.timing('foobar', 500)
       @statsd.socket.recv.must_equal ['service.foobar:500|ms']
     end
+
+    it "should add namespace to gauge" do
+      @statsd.gauge('foobar', 500)
+      @statsd.socket.recv.must_equal ['service.foobar:500|g']
+    end
   end
 
   describe "with logging" do

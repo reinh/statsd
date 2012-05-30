@@ -7,6 +7,7 @@ require 'socket'
 # @example Send some stats
 #   $statsd.increment 'garets'
 #   $statsd.timing 'glork', 320
+#   $statsd.gauge 'bork', 100
 # @example Use {#time} to time the execution of a block
 #   $statsd.time('account.activate') { @account.activate! }
 # @example Create a namespaced statsd client and increment 'account.activate'
