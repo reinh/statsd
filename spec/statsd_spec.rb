@@ -89,6 +89,13 @@ describe Statsd do
     end
   end
 
+  describe "#gauge" do
+    it "should format the message according to the statsd spec" do
+      @statsd.gauge('gaugor', 50)
+      @statsd.socket.recv.must_equal ['gaugor:50|g']
+    end
+  end
+
   describe "#sampled" do
     describe "when the sample rate is 1" do
       it "should yield" do
