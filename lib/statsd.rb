@@ -13,6 +13,30 @@ require 'socket'
 #   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
 #   statsd.increment 'activate'
 class Statsd
+  # Don't raise exceptions when collection fails.
+  # If a logger is provided, the exception will be logged.
+  #
+  # @example
+  #   Statsd.logger = Logger.new(STDOUT)
+  #   statsd = Statsd.new
+  #   statsd.extend(Statsd::ExceptionHandling)
+  module ExceptionHandling
+
+    attr_accessor :logger
+
+    def send(*args)
+      super
+    rescue Exception => exception
+      logger.error("Statsd: #{exception}") if logger
+      false
+    end
+
+    def logger
+      @logger ||= self.class.logger
+    end
+
+  end
+
   # A namespace to prepend to all statsd calls.
   attr_accessor :namespace
 
