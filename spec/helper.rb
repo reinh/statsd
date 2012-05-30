@@ -24,6 +24,12 @@ class FakeUDPSocket
     res = @buffer.shift
   end
 
+  def break!
+    instance_eval do
+      def send(message, *rest); raise SocketError end
+    end
+  end
+
   def clear
     @buffer = []
   end
