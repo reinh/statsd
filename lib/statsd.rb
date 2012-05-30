@@ -25,14 +25,7 @@ class Statsd
 
   class << self
     # Set to a standard logger instance to enable debug logging.
-    attr_reader :logger
-
-    def logger=(logger) #:nodoc:
-      @logger = logger
-
-      # Only include logging behavior if a logger is set.
-      include Logging
-    end
+    attr_accessor :logger
   end
 
   # @param [String] host your statsd host
@@ -136,19 +129,10 @@ class Statsd
     end
   end
 
-  module Sending
-    def send_to_socket(message)
-      @socket.send(message, 0, @host, @port)
-    end
-  end
-  include Sending
-
-  module Logging
-    def send_to_socket(message)
-      self.class.logger.debug {"Statsd: #{message}"}
-      super
-    rescue => boom
-      self.class.logger.error {"Statsd: #{boom.class} #{boom}"}
-    end
+  def send_to_socket(message)
+    self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
+    @socket.send(message, 0, @host, @port)
+  rescue => boom
+    self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
   end
 end
