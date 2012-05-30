@@ -13,31 +13,6 @@ describe Statsd do
 
   after { @statsd.socket.clear }
 
-  describe "Exception handling" do
-    before do
-      @statsd.extend(Statsd::ExceptionHandling)
-    end
-
-    it "should send messages when there are no exceptions" do
-      @statsd.increment('foobar')
-      @statsd.socket.recv.must_equal ['foobar:1|c']
-    end
-
-    it "should fail silently when encountering an error on send" do
-      @statsd.socket.break!
-      assert_equal false, @statsd.increment('foobar')
-    end
-
-    it "should log the exception when a logger is provided" do
-      @statsd.socket.break!
-      log            = StringIO.new
-      @statsd.logger = Logger.new(log)
-
-      @statsd.increment('foobar')
-      log.string.must_match 'Statsd: SocketError'
-    end
-  end
-
   describe "#initialize" do
     it "should set the host and port" do
       @statsd.host.must_equal 'localhost'
@@ -234,11 +209,9 @@ describe Statsd do
 
       @log.string.must_be_empty
     end
-
   end
 
   describe "stat names" do
-
     it "should accept anything as stat" do
       @statsd.increment(Object, 1)
     end
@@ -254,9 +227,24 @@ describe Statsd do
       @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
       @statsd.socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
     end
-
   end
 
+  describe "handling socket errors" do
+    before do
+      require 'stringio'
+      Statsd.logger = Logger.new(@log = StringIO.new)
+      @statsd.socket.instance_eval { def send(*) raise SocketError end }
+    end
+
+    it "should ignore socket errors" do
+      @statsd.increment('foobar').must_equal nil
+    end
+
+    it "should log socket errors" do
+      @statsd.increment('foobar')
+      @log.string.must_match 'Statsd: SocketError'
+    end
+  end
 end
 
 describe Statsd do
