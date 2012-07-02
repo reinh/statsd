@@ -13,6 +13,13 @@ require 'socket'
 # @example Create a namespaced statsd client and increment 'account.activate'
 #   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
 #   statsd.increment 'activate'
+#
+# Statsd instances are thread safe for general usage, by using a thread local
+# UDPSocket and carrying no state. The attributes are stateful, and are not
+# mutexed, it is expected that users will not change these at runtime in
+# threaded environments. If users require such use cases, it is recommend that
+# users either mutex around their Statsd object, or create separate objects for
+# each namespace / host+port combination.
 class Statsd
   # A namespace to prepend to all statsd calls.
   attr_reader :namespace
@@ -33,21 +40,23 @@ class Statsd
   def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
     @prefix = nil
-    @socket = UDPSocket.new
   end
 
   # @attribute [w] namespace
+  #   Writes are not thread safe.
   def namespace=(namespace)
     @namespace = namespace
     @prefix = "#{namespace}."
   end
 
   # @attribute [w] host
+  #   Writes are not thread safe.
   def host=(host)
     @host = host || '127.0.0.1'
   end
 
   # @attribute [w] port
+  #   Writes are not thread safe.
   def port=(port)
     @port = port || 8125
   end
@@ -134,9 +143,13 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
-    @socket.send(message, 0, @host, @port)
+    socket.send(message, 0, @host, @port)
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
     nil
+  end
+
+  def socket
+    Thread.current[:statsd_socket] ||= UDPSocket.new
   end
 end
