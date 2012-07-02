@@ -1,6 +1,11 @@
-= statsd
+= statsd-ruby {<img src="https://secure.travis-ci.org/jeremy/statsd-ruby.png" />}[http://travis-ci.org/jeremy/statsd-ruby]
 
-A Ruby statsd client (https://github.com/etsy/statsd)
+A Ruby client for {StatsD}[https://github.com/etsy/statsd]
+
+= Installing
+
+Bundler:
+  gem 'statsd-ruby', '~> 0.4.0', github: 'jeremy/statsd-ruby', require: 'statsd'
 
 = Installing
 

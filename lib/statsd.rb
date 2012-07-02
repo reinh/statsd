@@ -7,6 +7,7 @@ require 'socket'
 # @example Send some stats
 #   $statsd.increment 'garets'
 #   $statsd.timing 'glork', 320
+#   $statsd.gauge 'bork', 100
 # @example Use {#time} to time the execution of a block
 #   $statsd.time('account.activate') { @account.activate! }
 # @example Create a namespaced statsd client and increment 'account.activate'
@@ -14,52 +15,80 @@ require 'socket'
 #   statsd.increment 'activate'
 class Statsd
   # A namespace to prepend to all statsd calls.
-  attr_accessor :namespace
+  attr_reader :namespace
 
-  #characters that will be replaced with _ in stat names
-  RESERVED_CHARS_REGEX = /[\:\|\@]/
+  # StatsD host. Defaults to 127.0.0.1.
+  attr_accessor :host
+
+  # StatsD port. Defaults to 8125.
+  attr_accessor :port
 
   class << self
-    # Set to any standard logger instance (including stdlib's Logger) to enable
-    # stat logging using logger.debug
+    # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
   end
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host, port=8125)
-    @host, @port = host, port
+  def initialize(host = '127.0.0.1', port = 8125)
+    self.host, self.port = host, port
+    @prefix = nil
+    @socket = UDPSocket.new
+  end
+
+  def namespace=(namespace) #:nodoc:
+    @namespace = namespace
+    @prefix = "#{namespace}."
+  end
+
+  def host=(host) #:nodoc:
+    @host = host || '127.0.0.1'
+  end
+
+  def port=(port) #:nodoc:
+    @port = port || 8125
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
   #
-  # @param stat (see #count)
-  # @param sample_rate (see #count)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @see #count
-  def increment(stat, sample_rate=1); count stat, 1, sample_rate end
+  def increment(stat, sample_rate=1)
+    count stat, 1, sample_rate
+  end
 
   # Sends a decrement (count = -1) for the given stat to the statsd server.
   #
-  # @param stat (see #count)
-  # @param sample_rate (see #count)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @see #count
-  def decrement(stat, sample_rate=1); count stat, -1, sample_rate end
+  def decrement(stat, sample_rate=1)
+    count stat, -1, sample_rate
+  end
 
   # Sends an arbitrary count for the given stat to the statsd server.
   #
   # @param [String] stat stat name
   # @param [Integer] count count
-  # @param [Integer] sample_rate sample rate, 1 for always
-  def count(stat, count, sample_rate=1); send stat, count, 'c', sample_rate end
+  # @param [Numeric] sample_rate sample rate, 1 for always
+  def count(stat, count, sample_rate=1)
+    send_stats stat, count, :c, sample_rate
+  end
 
   # Sends an arbitary gauge value for the given stat to the statsd server.
   #
+  # This is useful for recording things like available disk space,
+  # memory usage, and the like, which have different semantics than
+  # counters.
+  #
   # @param [String] stat stat name.
   # @param [Numeric] gauge value.
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @example Report the current user count:
   #   $statsd.gauge('user.count', User.count)
-  def gauge(stat, value)
-    send stat, value, 'g'
+  def gauge(stat, value, sample_rate=1)
+    send_stats stat, value, :g, sample_rate
   end
 
   # Sends a timing (in ms) for the given stat to the statsd server. The
@@ -67,15 +96,17 @@ class Statsd
   # statsd server then uses the sample_rate to correctly track the average
   # timing for the stat.
   #
-  # @param stat stat name
+  # @param [String] stat stat name
   # @param [Integer] ms timing in milliseconds
-  # @param [Integer] sample_rate sample rate, 1 for always
-  def timing(stat, ms, sample_rate=1); send stat, ms, 'ms', sample_rate end
+  # @param [Numeric] sample_rate sample rate, 1 for always
+  def timing(stat, ms, sample_rate=1)
+    send_stats stat, ms, :ms, sample_rate
+  end
 
   # Reports execution time of the provided block using {#timing}.
   #
-  # @param stat (see #timing)
-  # @param sample_rate (see #timing)
+  # @param [String] stat stat name
+  # @param [Numeric] sample_rate sample rate, 1 for always
   # @yield The operation to be timed
   # @see #timing
   # @example Report the time (in ms) taken to activate an account
@@ -89,24 +120,20 @@ class Statsd
 
   private
 
-  def sampled(sample_rate)
-    yield unless sample_rate < 1 and rand > sample_rate
-  end
-
-  def send(stat, delta, type, sample_rate=1)
-    sampled(sample_rate) do
-      prefix = "#{@namespace}." unless @namespace.nil?
-      stat = stat.to_s.gsub('::', '.').gsub(RESERVED_CHARS_REGEX, '_')
-      send_to_socket("#{prefix}#{stat}:#{delta}|#{type}#{'|@' << sample_rate.to_s if sample_rate < 1}")
+  def send_stats(stat, delta, type, sample_rate=1)
+    if sample_rate == 1 or rand < sample_rate
+      # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
+      stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
+      rate = "|@#{sample_rate}" unless sample_rate == 1
+      send_to_socket "#{@prefix}#{stat}:#{delta}|#{type}#{rate}"
     end
   end
 
   def send_to_socket(message)
-    self.class.logger.debug {"Statsd: #{message}"} if self.class.logger
-    socket.send(message, 0, @host, @port)
+    self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
+    @socket.send(message, 0, @host, @port)
   rescue => boom
-    self.class.logger.error {"Statsd: #{boom.class} #{boom}"} if self.class.logger
+    self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
+    nil
   end
-
-  def socket; @socket ||= UDPSocket.new end
 end
