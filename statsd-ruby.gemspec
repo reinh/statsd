@@ -17,9 +17,9 @@ Gem::Specification.new("statsd-ruby", "0.4.0") do |s|
     s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   end
 
-  s.add_development_dependency "minitest"
+  s.add_development_dependency "minitest", ">= 3.2.0"
   s.add_development_dependency "yard"
-  s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov", ">= 0.6.4"
   s.add_development_dependency "rake"
 end
 
