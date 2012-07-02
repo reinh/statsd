@@ -18,10 +18,10 @@ class Statsd
   attr_reader :namespace
 
   # StatsD host. Defaults to 127.0.0.1.
-  attr_accessor :host
+  attr_reader :host
 
   # StatsD port. Defaults to 8125.
-  attr_accessor :port
+  attr_reader :port
 
   class << self
     # Set to a standard logger instance to enable debug logging.
@@ -36,16 +36,19 @@ class Statsd
     @socket = UDPSocket.new
   end
 
-  def namespace=(namespace) #:nodoc:
+  # @attribute [w] namespace
+  def namespace=(namespace)
     @namespace = namespace
     @prefix = "#{namespace}."
   end
 
-  def host=(host) #:nodoc:
+  # @attribute [w] host
+  def host=(host)
     @host = host || '127.0.0.1'
   end
 
-  def port=(port) #:nodoc:
+  # @attribute [w] port
+  def port=(port)
     @port = port || 8125
   end
 
