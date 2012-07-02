@@ -7,7 +7,7 @@ Gem::Specification.new("statsd-ruby", "1.0.0") do |s|
   s.summary = "A Ruby StatsD client"
   s.description = "A Ruby StatsD client (https://github.com/etsy/statsd)"
 
-  s.homepage = "https://github.com/reinh/statsd-ruby"
+  s.homepage = "https://github.com/reinh/statsd"
   s.licenses = %w[MIT]
 
   s.extra_rdoc_files = %w[LICENSE.txt README.rdoc]
