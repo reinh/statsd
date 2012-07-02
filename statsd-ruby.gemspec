@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-Gem::Specification.new("statsd-ruby", "0.4.0") do |s|
+Gem::Specification.new("statsd-ruby", "1.0.0") do |s|
   s.authors = ["Rein Henrichs"]
   s.email = "rein@phpfog.com"
 
