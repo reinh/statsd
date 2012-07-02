@@ -1,11 +1,6 @@
-= statsd-ruby {<img src="https://secure.travis-ci.org/jeremy/statsd-ruby.png" />}[http://travis-ci.org/jeremy/statsd-ruby]
+= statsd-ruby {<img src="https://secure.travis-ci.org/reinh/statsd-ruby.png" />}[http://travis-ci.org/reinh/statsd-ruby]
 
 A Ruby client for {StatsD}[https://github.com/etsy/statsd]
-
-= Installing
-
-Bundler:
-  gem 'statsd-ruby', '~> 0.4.0', github: 'jeremy/statsd-ruby', require: 'statsd'
 
 = Installing
 
@@ -32,8 +27,14 @@ Run the specs and include live integration specs with <tt>LIVE=true rake spec</t
 
 * Rein Henrichs
 * Ray Krueger
+* Jeremy Kemper
+* Ryan Tomayko
+* Gabriel Burt
+* Rick Olson
+* Trae Robrock
+* Corey Donohoe
+* James Tucker
 
 == Copyright
 
-Copyright (c) 2011 Rein Henrichs. See LICENSE.txt for
-further details.
+Copyright (c) 2011 Rein Henrichs. See LICENSE.txt for further details.
