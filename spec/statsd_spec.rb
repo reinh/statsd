@@ -189,6 +189,30 @@ describe Statsd do
     end
   end
 
+  describe "with postfix" do
+    before { @statsd.postfix = 'ip-23-45-56-78' }
+
+    it "should add postfix to increment" do
+      @statsd.increment('foobar')
+      @socket.recv.must_equal ['foobar.ip-23-45-56-78:1|c']
+    end
+
+    it "should add postfix to decrement" do
+      @statsd.decrement('foobar')
+      @socket.recv.must_equal ['foobar.ip-23-45-56-78:-1|c']
+    end
+
+    it "should add namespace to timing" do
+      @statsd.timing('foobar', 500)
+      @socket.recv.must_equal ['foobar.ip-23-45-56-78:500|ms']
+    end
+
+    it "should add namespace to gauge" do
+      @statsd.gauge('foobar', 500)
+      @socket.recv.must_equal ['foobar.ip-23-45-56-78:500|g']
+    end
+  end
+
   describe "with logging" do
     require 'stringio'
     before { Statsd.logger = Logger.new(@log = StringIO.new)}
