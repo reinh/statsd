@@ -113,12 +113,12 @@ describe Statsd do
 
   describe "#time" do
     it "should format the message according to the statsd spec" do
-      @statsd.time('foobar') { sleep(0.001); 'test' }
-      @socket.recv.must_equal ['foobar:1|ms']
+      @statsd.time('foobar') { 'test' }
+      @socket.recv.must_equal ['foobar:0|ms']
     end
 
     it "should return the result of the block" do
-      result = @statsd.time('foobar') { sleep(0.001); 'test' }
+      result = @statsd.time('foobar') { 'test' }
       result.must_equal 'test'
     end
 
@@ -126,8 +126,8 @@ describe Statsd do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
 
       it "should format the message according to the statsd spec" do
-        result = @statsd.time('foobar', 0.5) { sleep(0.001); 'test' }
-        @socket.recv.must_equal ['foobar:1|ms|@0.5']
+        result = @statsd.time('foobar', 0.5) { 'test' }
+        @socket.recv.must_equal ['foobar:0|ms|@0.5']
       end
     end
   end
