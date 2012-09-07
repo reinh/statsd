@@ -1,4 +1,4 @@
-= statsd-ruby {<img src="https://secure.travis-ci.org/reinh/statsd-ruby.png" />}[http://travis-ci.org/reinh/statsd-ruby]
+= statsd-ruby {<img src="https://secure.travis-ci.org/reinh/statsd.png" />}[http://travis-ci.org/reinh/statsd]
 
 A Ruby client for {StatsD}[https://github.com/etsy/statsd]
 
