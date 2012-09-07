@@ -13,6 +13,8 @@ require 'socket'
 # @example Create a namespaced statsd client and increment 'account.activate'
 #   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
 #   statsd.increment 'activate'
+# @example Set the statsd client to batch requests 10 at a time
+#   statsd.batch_size = 10
 #
 # Statsd instances are thread safe for general usage, by using a thread local
 # UDPSocket and carrying no state. The attributes are stateful, and are not
@@ -30,6 +32,12 @@ class Statsd
   # StatsD port. Defaults to 8125.
   attr_reader :port
 
+  # The number of statsd messages to batch together before writing to the socket.
+  attr_accessor :batch_size
+
+  # The Array of batched statsd messages.
+  attr_reader :batch
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
@@ -39,6 +47,8 @@ class Statsd
   # @param [Integer] port your statsd port
   def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
+    @batch_size = 1
+    @batch = []
     @prefix = nil
   end
 
@@ -137,8 +147,22 @@ class Statsd
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
       stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
-      send_to_socket "#{@prefix}#{stat}:#{delta}|#{type}#{rate}"
+      payload = "#{@prefix}#{stat}:#{delta}|#{type}#{rate}"
+
+      @batch << payload
+      flush! if batch_full?
     end
+
+    return nil
+  end
+
+  def batch_full?
+    @batch.size >= @batch_size
+  end
+
+  def flush!
+    send_to_socket @batch.join("\n")
+    @batch.clear
   end
 
   def send_to_socket(message)
@@ -146,7 +170,6 @@ class Statsd
     socket.send(message, 0, @host, @port)
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
-    nil
   end
 
   def socket
