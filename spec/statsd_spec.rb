@@ -258,6 +258,36 @@ describe Statsd do
     end
 
   end
+
+  describe "batching" do
+    before do
+      @batched_statsd = Statsd.new('localhost', 1234)
+      @batched_statsd.batch_size = 2
+      @batched_statsd.increment('foobar')
+    end
+
+    describe "before batch size is reached" do
+      it "should append payloads to the batch" do
+        @batched_statsd.batch.must_equal ['foobar:1|c']
+      end
+
+      it "should not send the packet via the udp socket" do
+        @socket.recv.must_equal nil
+      end
+    end
+
+    describe "after the batch size is reached" do
+      before { @batched_statsd.increment('bizzbazz') }
+
+      it "should send the full batch via the udp socket" do
+        @socket.recv.must_equal ["foobar:1|c\nbizzbazz:1|c"]
+      end
+
+      it "should clear the batch" do
+        @batched_statsd.batch.must_equal []
+      end
+    end
+  end
 end
 
 describe Statsd do
