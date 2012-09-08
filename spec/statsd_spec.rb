@@ -245,6 +245,45 @@ describe Statsd do
     end
   end
 
+  describe "batching" do
+    it "should have a default batch size of 10" do
+      @statsd.batch_size.must_equal 10
+    end
+
+    it "should have a modifiable batch size" do
+      @statsd.batch_size = 7
+      @statsd.batch_size.must_equal 7
+      @statsd.batch do |b|
+        b.batch_size.must_equal 7
+      end
+    end
+
+    it "should flush the batch at the batch size or at the end of the block" do
+      @statsd.batch do |b|
+        b.batch_size = 3
+
+        # The first three should flush, the next two will be flushed when the
+        # block is done.
+        5.times { b.increment('foobar') }
+
+        @socket.recv.must_equal [(["foobar:1|c"] * 3).join("\n")]
+      end
+
+      @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+    end
+
+    it "should not flush to the socket if the backlog is empty" do
+      batch = Statsd::Batch.new(@statsd)
+      batch.flush
+      @socket.recv.must_be :nil?
+
+      batch.increment 'foobar'
+      batch.flush
+      @socket.recv.must_equal %w[foobar:1|c]
+    end
+
+  end
+
   describe "thread safety" do
 
     it "should use a thread local socket" do
