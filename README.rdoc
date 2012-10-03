@@ -24,6 +24,20 @@ Bundler:
   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
   statsd.increment 'activate'
 
+= Usage outside production
+
+Usually it's undesirable to send stats while not in production. For this use-case the class Statd::Mock is provided. It behaves exactly like the Statsd class, but never sends the stats.
+
+  # given 'production?' tests whether this is an production environment.
+  if production?
+    $statsd = Statsd.new 'localhost', 8125
+  else
+    require 'statsd/mock'
+    $statsd = Statsd::Mock.new
+  end
+
+Just like Statsd, Statsd::Mock logs to the Statsd logger so you can see what would have been send.
+
 = Testing
 
 Run the specs with <tt>rake spec</tt>
