@@ -17,7 +17,7 @@ class FakeUDPSocket
   end
 
   def recv
-    res = @buffer.shift
+    @buffer.shift
   end
 
   def clear
