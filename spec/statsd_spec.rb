@@ -1,4 +1,5 @@
 require 'helper'
+require 'shared_examples'
 
 describe Statsd do
   class Statsd
@@ -11,6 +12,14 @@ describe Statsd do
   end
 
   after { Thread.current[:statsd_socket] = nil }
+
+  describe "should behave like a Statsd ducktype" do
+
+    let(:described_class){ Statsd }
+
+    instance_eval( &A_STATSD_DUCKTYPE )
+
+  end
 
   describe "#initialize" do
     it "should set the host and port" do
@@ -189,25 +198,12 @@ describe Statsd do
     end
   end
 
-  describe "with logging" do
-    require 'stringio'
-    before { Statsd.logger = Logger.new(@log = StringIO.new)}
+  describe "should log to global logger" do
 
-    it "should write to the log in debug" do
-      Statsd.logger.level = Logger::DEBUG
+    let(:described_class){ Statsd }
 
-      @statsd.increment('foobar')
+    instance_eval( &LOG_TO_STATSD_LOGGER )
 
-      @log.string.must_match "Statsd: foobar:1|c"
-    end
-
-    it "should not write to the log unless debug" do
-      Statsd.logger.level = Logger::INFO
-
-      @statsd.increment('foobar')
-
-      @log.string.must_be_empty
-    end
   end
 
   describe "stat names" do
