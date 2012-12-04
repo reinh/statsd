@@ -95,7 +95,7 @@ class Statsd
   # counters.
   #
   # @param [String] stat stat name.
-  # @param [Numeric] gauge value.
+  # @param [Numeric] value gauge value.
   # @param [Numeric] sample_rate sample rate, 1 for always
   # @example Report the current user count:
   #   $statsd.gauge('user.count', User.count)
