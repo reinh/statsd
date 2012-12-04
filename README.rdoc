@@ -10,7 +10,7 @@ Bundler:
 = Basic Usage
 
   # Set up a global Statsd client for a server on localhost:9125
-  $statsd = Statsd.new 'localhost', 8125
+  $statsd = Statsd.new 'localhost', 9125
 
   # Send some stats
   $statsd.increment 'garets'
