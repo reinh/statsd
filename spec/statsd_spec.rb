@@ -126,7 +126,7 @@ describe Statsd do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
 
       it "should format the message according to the statsd spec" do
-        result = @statsd.time('foobar', 0.5) { 'test' }
+        @statsd.time('foobar', 0.5) { 'test' }
         @socket.recv.must_equal ['foobar:0|ms|@0.5']
       end
     end
