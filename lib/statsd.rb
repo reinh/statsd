@@ -1,4 +1,5 @@
 require 'socket'
+require 'forwardable'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
@@ -21,6 +22,68 @@ require 'socket'
 # users either mutex around their Statsd object, or create separate objects for
 # each namespace / host+port combination.
 class Statsd
+
+  # = Batch: A batching statsd proxy
+  #
+  # @example Batch a set of instruments using Batch and manual flush:
+  #   $statsd = Statsd.new 'localhost', 8125
+  #   batch = Statsd::Batch.new($statsd)
+  #   batch.increment 'garets'
+  #   batch.timing 'glork', 320
+  #   batch.gauge 'bork', 100
+  #   batch.flush
+  #
+  # Batch is a subclass of Statsd, but with a constructor that proxies to a
+  # normal Statsd instance. It has it's own batch_size and namespace parameters
+  # (that inherit defaults from the supplied Statsd instance). It is recommended
+  # that some care is taken if setting very large batch sizes. If the batch size
+  # exceeds the allowed packet size for UDP on your network, communication
+  # troubles may occur and data will be lost.
+  class Batch < Statsd
+
+    extend Forwardable
+    def_delegators :@statsd,
+      :namespace, :namespace=, :host, :port, :prefix, :postfix
+
+    attr_accessor :batch_size
+
+    # @param [Statsd] requires a configured Statsd instance
+    def initialize(statsd)
+      @statsd = statsd
+      @batch_size = statsd.batch_size
+      @backlog = []
+    end
+
+    # @yields [Batch] yields itself
+    #
+    # A convenience method to ensure that data is not lost in the event of an
+    # exception being thrown. Batches will be transmitted on the parent socket
+    # as soon as the batch is full, and when the block finishes.
+    def easy
+      yield self
+    ensure
+      flush
+    end
+
+    def flush
+      unless @backlog.empty?
+        @statsd.send_to_socket @backlog.join("\n")
+        @backlog.clear
+      end
+    end
+
+    protected
+
+    def send_to_socket(message)
+      @backlog << message
+      if @backlog.size >= @batch_size
+        flush
+      end
+    end
+
+  end
+
+
   # A namespace to prepend to all statsd calls.
   attr_reader :namespace
 
@@ -29,6 +92,12 @@ class Statsd
 
   # StatsD port. Defaults to 8125.
   attr_reader :port
+
+  # StatsD namespace prefix, generated from #namespace
+  attr_reader :prefix
+
+  # The default batch size for new batches (default: 10)
+  attr_accessor :batch_size
 
   # a postfix to append to all metrics
   attr_reader :postfix
@@ -43,6 +112,7 @@ class Statsd
   def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
     @prefix = nil
+    @batch_size = 10
     @postfix = nil
   end
 
@@ -138,16 +208,21 @@ class Statsd
     result
   end
 
-  private
-
-  def send_stats(stat, delta, type, sample_rate=1)
-    if sample_rate == 1 or rand < sample_rate
-      # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
-      stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
-      rate = "|@#{sample_rate}" unless sample_rate == 1
-      send_to_socket "#{@prefix}#{stat}#{@postfix}:#{delta}|#{type}#{rate}"
-    end
+  # Creates and yields a Batch that can be used to batch instrument reports into
+  # larger packets. Batches are sent either when the packet is "full" (defined
+  # by batch_size), or when the block completes, whichever is the sooner.
+  #
+  # @yield [Batch] a statsd subclass that collects and batches instruments
+  # @example Batch two instument operations:
+  #   $statsd.batch do |batch|
+  #     batch.increment 'sys.requests'
+  #     batch.gauge('user.count', User.count)
+  #   end
+  def batch(&block)
+    Batch.new(self).easy &block
   end
+
+  protected
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
@@ -155,6 +230,17 @@ class Statsd
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
     nil
+  end
+
+  private
+
+  def send_stats(stat, delta, type, sample_rate=1)
+    if sample_rate == 1 or rand < sample_rate
+      # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
+      stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
+      rate = "|@#{sample_rate}" unless sample_rate == 1
+      send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
+    end
   end
 
   def socket
