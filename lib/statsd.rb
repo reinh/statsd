@@ -42,7 +42,8 @@ class Statsd
   class Batch < Statsd
 
     extend Forwardable
-    def_delegators :@statsd, :namespace, :namespace=, :host, :port, :prefix
+    def_delegators :@statsd,
+      :namespace, :namespace=, :host, :port, :prefix, :postfix
 
     attr_accessor :batch_size
 
@@ -98,6 +99,9 @@ class Statsd
   # The default batch size for new batches (default: 10)
   attr_accessor :batch_size
 
+  # a postfix to append to all metrics
+  attr_reader :postfix
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
@@ -109,6 +113,7 @@ class Statsd
     self.host, self.port = host, port
     @prefix = nil
     @batch_size = 10
+    @postfix = nil
   end
 
   # @attribute [w] namespace
@@ -116,6 +121,10 @@ class Statsd
   def namespace=(namespace)
     @namespace = namespace
     @prefix = "#{namespace}."
+  end
+
+  def postfix=(pf)
+    @postfix = ".#{pf}"
   end
 
   # @attribute [w] host
@@ -164,7 +173,7 @@ class Statsd
   # counters.
   #
   # @param [String] stat stat name.
-  # @param [Numeric] gauge value.
+  # @param [Numeric] value gauge value.
   # @param [Numeric] sample_rate sample rate, 1 for always
   # @example Report the current user count:
   #   $statsd.gauge('user.count', User.count)
@@ -230,7 +239,7 @@ class Statsd
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
       stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
-      send_to_socket "#{prefix}#{stat}:#{delta}|#{type}#{rate}"
+      send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
     end
   end
 
