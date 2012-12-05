@@ -30,6 +30,9 @@ class Statsd
   # StatsD port. Defaults to 8125.
   attr_reader :port
 
+  # a postfix to append to all metrics
+  attr_reader :postfix
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
@@ -40,6 +43,7 @@ class Statsd
   def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
     @prefix = nil
+    @postfix = nil
   end
 
   # @attribute [w] namespace
@@ -47,6 +51,10 @@ class Statsd
   def namespace=(namespace)
     @namespace = namespace
     @prefix = "#{namespace}."
+  end
+
+  def postfix=(pf)
+    @postfix = ".#{pf}"
   end
 
   # @attribute [w] host
@@ -137,7 +145,7 @@ class Statsd
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
       stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
-      send_to_socket "#{@prefix}#{stat}:#{delta}|#{type}#{rate}"
+      send_to_socket "#{@prefix}#{stat}#{@postfix}:#{delta}|#{type}#{rate}"
     end
   end
 
