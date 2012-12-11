@@ -226,7 +226,7 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
-    socket.send(message, 0, @host, @port)
+    socket.send(message, 0)
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
     nil
@@ -244,6 +244,9 @@ class Statsd
   end
 
   def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new
+    Thread.current[:statsd_socket] ||= UDPSocket.new.tap do |socket|
+      socket.connect @host, @port
+      at_exit { socket.close }
+    end
   end
 end
