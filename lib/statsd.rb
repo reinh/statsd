@@ -181,6 +181,22 @@ class Statsd
     send_stats stat, value, :g, sample_rate
   end
 
+  # Sends an arbitary set value for the given stat to the statsd server.
+  #
+  # This is for recording counts of unique events, which are useful to
+  # see on graphs to correlate to other values.  For example, a deployment
+  # might get recorded as a set, and be drawn as annotations on a CPU history
+  # graph.
+  #
+  # @param [String] stat stat name.
+  # @param [Numeric] value event value.
+  # @param [Numeric] sample_rate sample rate, 1 for always
+  # @example Report a deployment happening:
+  #   $statsd.set('deployment', DEPLOYMENT_EVENT_CODE)
+  def set(stat, value, sample_rate=1)
+    send_stats stat, value, :s, sample_rate
+  end
+
   # Sends a timing (in ms) for the given stat to the statsd server. The
   # sample_rate determines what percentage of the time this report is sent. The
   # statsd server then uses the sample_rate to correctly track the average

@@ -111,6 +111,21 @@ describe Statsd do
     end
   end
 
+  describe "#set" do
+    it "should format the message according to the statsd spec" do
+      @statsd.set('foobar', 765)
+      @socket.recv.must_equal ['foobar:765|s']
+    end
+
+    describe "with a sample rate" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.set('foobar', 500, 0.5)
+        @socket.recv.must_equal ['foobar:500|s|@0.5']
+      end
+    end
+  end
+
   describe "#time" do
     it "should format the message according to the statsd spec" do
       @statsd.time('foobar') { 'test' }
