@@ -2,7 +2,7 @@
 
 Gem::Specification.new("statsd-ruby", "1.1.0") do |s|
   s.authors = ["Rein Henrichs"]
-  s.email = "rein@phpfog.com"
+  s.email = "reinh@reinh.com"
 
   s.summary = "A Ruby StatsD client"
   s.description = "A Ruby StatsD client (https://github.com/etsy/statsd)"
