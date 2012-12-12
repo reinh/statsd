@@ -213,6 +213,18 @@ describe Statsd do
     end
   end
 
+  describe '#postfix=' do
+    describe "when nil, false, or empty" do
+      it "should set postfix to nil" do
+        [nil, false, ''].each do |value|
+          @statsd.postfix = 'a postfix'
+          @statsd.postfix = value
+          @statsd.postfix.must_equal nil
+        end
+      end
+    end
+  end
+
   describe "with logging" do
     require 'stringio'
     before { Statsd.logger = Logger.new(@log = StringIO.new)}

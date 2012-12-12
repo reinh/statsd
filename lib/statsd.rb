@@ -123,8 +123,14 @@ class Statsd
     @prefix = "#{namespace}."
   end
 
+  # @attribute [w] postfix
+  #   A value to be appended to the stat name after a '.'. If the value is
+  #   blank then the postfix will be reset to nil (rather than to '.').
   def postfix=(pf)
-    @postfix = ".#{pf}"
+    case pf
+    when nil, false, '' then @postfix = nil
+    else @postfix = ".#{pf}"
+    end
   end
 
   # @attribute [w] host
