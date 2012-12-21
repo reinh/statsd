@@ -333,6 +333,24 @@ describe Statsd do
       @socket.recv.must_equal %w[foobar:1|c]
     end
 
+    it "should support setting namespace for the underlying instance" do
+      batch = Statsd::Batch.new(@statsd)
+      batch.namespace = 'ns'
+      @statsd.namespace.must_equal 'ns'
+    end
+
+    it "should support setting host for the underlying instance" do
+      batch = Statsd::Batch.new(@statsd)
+      batch.host = '1.2.3.4'
+      @statsd.host.must_equal '1.2.3.4'
+    end
+
+    it "should support setting port for the underlying instance" do
+      batch = Statsd::Batch.new(@statsd)
+      batch.port = 42
+      @statsd.port.must_equal 42
+    end
+
   end
 
   describe "thread safety" do
