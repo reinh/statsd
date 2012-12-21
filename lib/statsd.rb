@@ -43,7 +43,11 @@ class Statsd
 
     extend Forwardable
     def_delegators :@statsd,
-      :namespace, :namespace=, :host, :port, :prefix, :postfix
+      :namespace, :namespace=,
+      :host, :host=,
+      :port, :port=,
+      :prefix,
+      :postfix
 
     attr_accessor :batch_size
 
