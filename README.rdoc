@@ -35,7 +35,7 @@ Run the specs and include live integration specs with <tt>LIVE=true rake spec</t
 * A short note about DNS: If you use a dns name for the host option, then you will want to use a local caching dns service for optimial performance (e.g. nscd).
 
 == Contributing to statsd
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project
@@ -55,7 +55,21 @@ Run the specs and include live integration specs with <tt>LIVE=true rake spec</t
 * Trae Robrock
 * Corey Donohoe
 * James Tucker
+* Dotan Nahum
+* Eric Chapweske
+* Hannes Georg
+* John Nunemaker
+* Mahesh Murthy
+* Manu J
+* Matt Sanford
+* Nate Bird
+* Noah Lorang
+* Oscar Del Ben
+* Peter Mounce
+* Ray Krueger
+* Reed Lipman
+* Thomas Whaples
 
 == Copyright
 
-Copyright (c) 2011 Rein Henrichs. See LICENSE.txt for further details.
+Copyright (c) 2011, 2012, 2013 Rein Henrichs. See LICENSE.txt for further details.
