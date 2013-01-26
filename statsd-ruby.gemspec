@@ -21,5 +21,6 @@ Gem::Specification.new("statsd-ruby", "1.2.0") do |s|
   s.add_development_dependency "yard"
   s.add_development_dependency "simplecov", ">= 0.6.4"
   s.add_development_dependency "rake"
+  s.add_development_dependency "rack-test"
 end
 
