@@ -5,6 +5,8 @@ require 'forwardable'
 #
 # @example Set up a global Statsd client for a server on localhost:9125
 #   $statsd = Statsd.new 'localhost', 8125
+# @example Set up a global Statsd client for a server on IPv6 port 9125
+#   $statsd = Statsd.new '::1', 8125, true
 # @example Send some stats
 #   $statsd.increment 'garets'
 #   $statsd.timing 'glork', 320
@@ -46,6 +48,7 @@ class Statsd
       :namespace, :namespace=,
       :host, :host=,
       :port, :port=,
+      :ipv6, :ipv6=,
       :prefix,
       :postfix
 
@@ -97,6 +100,9 @@ class Statsd
   # StatsD port. Defaults to 8125.
   attr_reader :port
 
+  # StatsD ipv6. Defaults to false.
+  attr_reader :ipv6
+
   # StatsD namespace prefix, generated from #namespace
   attr_reader :prefix
 
@@ -113,8 +119,9 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host = '127.0.0.1', port = 8125)
-    self.host, self.port = host, port
+  # @param [Bool] ipv6 can be 'true' or 'false'
+  def initialize(host = '127.0.0.1', port = 8125, ipv6 = false)
+    self.host, self.port, self.ipv6 = host, port, ipv6
     @prefix = nil
     @batch_size = 10
     @postfix = nil
@@ -147,6 +154,12 @@ class Statsd
   #   Writes are not thread safe.
   def port=(port)
     @port = port || 8125
+  end
+
+  # @attribute [w] ipv6
+  #   Writes are not thread safe.
+  def ipv6=(ipv6)
+    @ipv6 = ipv6 || false
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
@@ -270,6 +283,10 @@ class Statsd
   end
 
   def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new
+    Thread.current[:statsd_socket] ||= UDPSocket.new addr_family
+  end
+
+  def addr_family
+    @ipv6 ? Socket::AF_INET6 : Socket::AF_INET
   end
 end

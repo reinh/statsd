@@ -18,19 +18,22 @@ describe Statsd do
       @statsd.port.must_equal 1234
     end
 
-    it "should default the host to 127.0.0.1 and port to 8125" do
+    it "should default the host to 127.0.0.1, port to 8125, and ipv6 to false" do
       statsd = Statsd.new
       statsd.host.must_equal '127.0.0.1'
       statsd.port.must_equal 8125
+      statsd.ipv6.must_equal false
     end
   end
 
   describe "#host and #port" do
-    it "should set host and port" do
+    it "should set host, port and ipv6" do
       @statsd.host = '1.2.3.4'
       @statsd.port = 5678
+      @statsd.ipv6 = true
       @statsd.host.must_equal '1.2.3.4'
       @statsd.port.must_equal 5678
+      @statsd.ipv6.must_equal true
     end
 
     it "should not resolve hostnames to IPs" do
@@ -46,6 +49,16 @@ describe Statsd do
     it "should set nil port to default" do
       @statsd.port = nil
       @statsd.port.must_equal 8125
+    end
+
+    it "should set nil ipv6 to default" do
+      @statsd.ipv6 = nil
+      @statsd.ipv6.must_equal false
+    end
+
+    it "should allow an IPv6 address" do
+      @statsd.host = '::1'
+      @statsd.host.must_equal '::1'
     end
   end
 
@@ -351,6 +364,12 @@ describe Statsd do
       @statsd.port.must_equal 42
     end
 
+    it "should support setting ipv6 for the underlying instance" do
+      batch = Statsd::Batch.new(@statsd)
+      batch.ipv6 = true
+      @statsd.ipv6.must_equal true
+    end
+
   end
 
   describe "thread safety" do
@@ -370,12 +389,38 @@ end
 
 describe Statsd do
   describe "with a real UDP socket" do
+
     it "should actually send stuff over the socket" do
+      Thread.current[:statsd_socket] = nil
       socket = UDPSocket.new
       host, port = 'localhost', 12345
       socket.bind(host, port)
 
       statsd = Statsd.new(host, port)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+
+    it "should send stuff over an IPv4 socket" do
+      Thread.current[:statsd_socket] = nil
+      socket = UDPSocket.new Socket::AF_INET
+      host, port = '127.0.0.1', 12346
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port, false)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+
+    it "should send stuff over an IPv6 socket" do
+      Thread.current[:statsd_socket] = nil
+      socket = UDPSocket.new Socket::AF_INET6
+      host, port = '::1', 12347
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port, true)
       statsd.increment('foobar')
       message = socket.recvfrom(16).first
       message.must_equal 'foobar:1|c'
