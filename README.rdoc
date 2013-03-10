@@ -12,6 +12,9 @@ Bundler:
   # Set up a global Statsd client for a server on localhost:9125
   $statsd = Statsd.new 'localhost', 9125
 
+  # Set up a global Statsd client for a server on IPv6 port 9125
+  $statsd = Statsd.new '::1', 9125, true
+
   # Send some stats
   $statsd.increment 'garets'
   $statsd.timing 'glork', 320
