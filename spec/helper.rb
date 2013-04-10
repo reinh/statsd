@@ -5,6 +5,7 @@ require 'simplecov'
 SimpleCov.start
 
 require 'statsd'
+require 'statsd/interceptor'
 require 'logger'
 
 class FakeUDPSocket

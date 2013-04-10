@@ -366,6 +366,41 @@ describe Statsd do
     end
 
   end
+
+  describe "interceptor" do
+
+    class TestTarget
+      def boosh
+        "and/or kakow"
+      end
+      def boom
+        raise "boom"
+      end
+    end
+
+    before do
+      @target = Statsd::Interceptor.new(TestTarget.new, @statsd)
+    end
+
+    it "must time methods" do
+      @target.boosh.must_equal "and/or kakow"
+      @socket.recv.must_equal ['TestTarget.boosh:0|ms']
+    end
+
+    it "must count and re-raise errors" do
+      proc{ @target.boom }.must_raise RuntimeError, "boom"
+      @socket.recv.must_equal ['TestTarget.boom.errors:1|c']
+    end
+
+    it "must provide access to the original target" do
+      @target.target.must_be_kind_of TestTarget
+    end
+
+    it "must provide access to the original statsd client" do
+      @target.statsd.must_be_same_as @statsd
+    end
+
+  end
 end
 
 describe Statsd do
