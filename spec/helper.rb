@@ -31,4 +31,7 @@ class FakeUDPSocket
   def inspect
     "<FakeUDPSocket: #{@buffer.inspect}>"
   end
+
+  def close
+  end
 end
