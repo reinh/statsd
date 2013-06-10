@@ -252,11 +252,18 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
+    socket = get_socket
     socket.send(message, 0, @host, @port)
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
-    nil
+  ensure
+    socket.close
+    return nil
   end
+
+  def get_socket
+    UDPSocket.new
+  end 
 
   private
 
@@ -267,9 +274,5 @@ class Statsd
       rate = "|@#{sample_rate}" unless sample_rate == 1
       send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
     end
-  end
-
-  def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new
   end
 end
