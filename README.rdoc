@@ -5,7 +5,7 @@ A Ruby client for {StatsD}[https://github.com/etsy/statsd]
 = Installing
 
 Bundler:
-  gem "statsd-ruby", :require => "statsd"
+  gem "statsd-ruby"
 
 = Basic Usage
 
