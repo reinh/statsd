@@ -362,7 +362,7 @@ describe Statsd do
 
     it "should create a new socket when used in a new thread" do
       sock = @statsd.send(:socket)
-      Thread.new { Thread.current[:statsd_socket].wont_equal sock }.join
+      Thread.new { Thread.current[:statsd_socket] }.value.wont_equal sock
     end
 
   end
