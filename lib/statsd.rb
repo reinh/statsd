@@ -1,5 +1,6 @@
 require 'socket'
 require 'forwardable'
+require 'multi_json'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
@@ -87,6 +88,124 @@ class Statsd
 
   end
 
+  class Admin
+    # StatsD host. Defaults to 127.0.0.1.
+    attr_reader :host
+
+    # StatsD admin port. Defaults to 8126.
+    attr_reader :port
+
+    class << self
+      # Set to a standard logger instance to enable debug logging.
+      attr_accessor :logger
+    end
+
+    # @attribute [w] host
+    #   Writes are not thread safe.
+    def host=(host)
+      @host = host || '127.0.0.1'
+    end
+
+    # @attribute [w] port
+    #   Writes are not thread safe.
+    def port=(port)
+      @port = port || 8126
+    end
+
+    # @param [String] host your statsd host
+    # @param [Integer] port your statsd port
+    def initialize(host = '127.0.0.1', port = 8126)
+      self.host, self.port = host, port
+    end
+
+    # Reads all gauges from StatsD.
+    def gauges
+      read_metric :gauges
+    end
+
+    # Reads all timers from StatsD.
+    def timers
+      read_metric :timers
+    end
+
+    # Reads all counters from StatsD.
+    def counters
+      read_metric :counters
+    end
+
+    # @param[String] item
+    #   Deletes one or more gauges. Wildcards are allowed.
+    def delgauges item
+      delete_metric :gauges, item
+    end
+
+    # @param[String] item
+    #   Deletes one or more timers. Wildcards are allowed.
+    def deltimers item
+      delete_metric :timers, item
+    end
+
+    # @param[String] item
+    #   Deletes one or more counters. Wildcards are allowed.
+    def delcounters item
+      delete_metric :counters, item
+    end
+
+    def stats
+      # the format of "stats" isn't JSON, who knows why
+      send_to_socket "stats"
+      result = read_from_socket
+      items = {}
+      result.split("\n").each do |line|
+        key, val = line.chomp.split(": ")
+        items[key] = val.to_i
+      end
+      items
+    end
+
+    private
+
+    def read_metric name
+      send_to_socket name
+      result = read_from_socket
+      # for some reason, the reply looks like JSON, but isn't, quite
+      MultiJson.load result.gsub("'", "\"")
+    end
+
+    def delete_metric name, item
+      send_to_socket "del#{name} #{item}"
+      result = read_from_socket
+      deleted = []
+      result.split("\n").each do |line|
+        deleted << line.chomp.split(": ")[-1]
+      end
+      deleted
+    end
+
+    def send_to_socket(message)
+      self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
+      socket.write(message.to_s + "\n")
+    rescue => boom
+      self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
+      nil
+    end
+
+
+    def read_from_socket
+      buffer = ""
+      loop do
+        line = socket.readline
+        break if line == "END\n"
+        buffer += line
+      end
+      socket.readline # clear the closing newline out of the socket
+      buffer
+    end
+
+    def socket
+      Thread.current[:statsd_admin_socket] ||= TCPSocket.new(host, port)
+    end
+  end
 
   # A namespace to prepend to all statsd calls.
   attr_reader :namespace

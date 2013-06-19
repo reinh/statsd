@@ -29,6 +29,13 @@ class FakeUDPSocket
   end
 
   def inspect
-    "<FakeUDPSocket: #{@buffer.inspect}>"
+    "<#{self.class.name}: #{@buffer.inspect}>"
+  end
+end
+
+class FakeTCPSocket < FakeUDPSocket
+  alias_method :readline, :recv
+  def write(message)
+    @buffer.push message
   end
 end
