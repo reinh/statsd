@@ -1,6 +1,6 @@
 require 'socket'
 require 'forwardable'
-require 'multi_json'
+require 'json'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
@@ -169,7 +169,7 @@ class Statsd
       send_to_socket name
       result = read_from_socket
       # for some reason, the reply looks like JSON, but isn't, quite
-      MultiJson.load result.gsub("'", "\"")
+      JSON.parse result.gsub("'", "\"")
     end
 
     def delete_metric name, item
