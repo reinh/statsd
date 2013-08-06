@@ -14,7 +14,7 @@ describe Statsd do
 
   describe "#initialize" do
     it "should set the host and port" do
-      @statsd.host.must_equal 'localhost'
+      @statsd.host.must_equal '127.0.0.1'
       @statsd.port.must_equal 1234
     end
 
@@ -33,9 +33,14 @@ describe Statsd do
       @statsd.port.must_equal 5678
     end
 
-    it "should not resolve hostnames to IPs" do
+    it "should resolve hostnames to IPs" do
       @statsd.host = 'localhost'
-      @statsd.host.must_equal 'localhost'
+      @statsd.host.must_equal '127.0.0.1'
+    end
+    
+    it "should resolve IPs to IPs" do
+      @statsd.host = '127.0.0.1'
+      @statsd.host.must_equal '127.0.0.1'
     end
 
     it "should set nil host to default" do
