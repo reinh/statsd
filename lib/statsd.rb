@@ -1,5 +1,6 @@
 require 'socket'
 require 'forwardable'
+require 'resolv'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
@@ -140,7 +141,7 @@ class Statsd
   # @attribute [w] host
   #   Writes are not thread safe.
   def host=(host)
-    @host = host || '127.0.0.1'
+    @host = Resolv.getaddress(host || '127.0.0.1')
   end
 
   # @attribute [w] port
