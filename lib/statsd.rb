@@ -395,6 +395,6 @@ class Statsd
   end
 
   def addr_family
-    Addrinfo.udp(@host, @port).ipv6 ? Socket::AF_INET6 : Socket::AF_INET
+    Addrinfo.udp(@host, @port).ipv6? ? Socket::AF_INET6 : Socket::AF_INET
   end
 end
