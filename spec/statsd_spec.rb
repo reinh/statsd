@@ -47,6 +47,11 @@ describe Statsd do
       @statsd.port = nil
       @statsd.port.must_equal 8125
     end
+
+    it "should allow an IPv6 address" do
+      @statsd.host = '::1'
+      @statsd.host.must_equal '::1'
+    end
   end
 
   describe "#increment" do
@@ -371,8 +376,33 @@ end
 describe Statsd do
   describe "with a real UDP socket" do
     it "should actually send stuff over the socket" do
+      Thread.current[:statsd_socket] = nil
       socket = UDPSocket.new
       host, port = 'localhost', 12345
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+
+    it "should send stuff over an IPv4 socket" do
+      Thread.current[:statsd_socket] = nil
+      socket = UDPSocket.new Socket::AF_INET
+      host, port = '127.0.0.1', 12346
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+
+    it "should send stuff over an IPv6 socket" do
+      Thread.current[:statsd_socket] = nil
+      socket = UDPSocket.new Socket::AF_INET6
+      host, port = '::1', 12347
       socket.bind(host, port)
 
       statsd = Statsd.new(host, port)
