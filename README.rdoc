@@ -37,6 +37,10 @@ Run the specs and include live integration specs with <tt>LIVE=true rake spec</t
 
 * A short note about DNS: If you use a dns name for the host option, then you will want to use a local caching dns service for optimial performance (e.g. nscd).
 
+= Extensions / Libraries / Extra Docs
+
+* See the wiki[https://github.com/reinh/statsd/wiki]
+
 == Contributing to statsd
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
