@@ -4,8 +4,10 @@ require 'json'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
-# @example Set up a global Statsd client for a server on localhost:9125
+# @example Set up a global Statsd client for a server on localhost:8125
 #   $statsd = Statsd.new 'localhost', 8125
+# @example Set up a global Statsd client for a server on IPv6 port 8125
+#   $statsd = Statsd.new '::1', 8125
 # @example Send some stats
 #   $statsd.increment 'garets'
 #   $statsd.timing 'glork', 320
@@ -389,6 +391,10 @@ class Statsd
   end
 
   def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new
+    Thread.current[:statsd_socket] ||= UDPSocket.new addr_family
+  end
+
+  def addr_family
+    Addrinfo.udp(@host, @port).ipv6? ? Socket::AF_INET6 : Socket::AF_INET
   end
 end
