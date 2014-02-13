@@ -234,11 +234,13 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host = '127.0.0.1', port = 8125)
+  # @param [Object] A socket object (probably UDPSocket) to reuse
+  def initialize(host = '127.0.0.1', port = 8125, socket = nil)
     self.host, self.port = host, port
     @prefix = nil
     @batch_size = 10
     @postfix = nil
+    @socket = socket
   end
 
   # @attribute [w] namespace
@@ -391,7 +393,7 @@ class Statsd
   end
 
   def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new addr_family
+    @socket || Thread.current[:statsd_socket] ||= UDPSocket.new(addr_family)
   end
 
   def addr_family
