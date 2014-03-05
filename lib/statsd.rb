@@ -239,6 +239,7 @@ class Statsd
     @prefix = nil
     @batch_size = 10
     @postfix = nil
+    @connected = false
   end
 
   # @attribute [w] namespace
@@ -268,6 +269,21 @@ class Statsd
   #   Writes are not thread safe.
   def port=(port)
     @port = port || 8125
+  end
+
+  # @attribute [r] connected
+  #   Are we pre-connected to the UDP Socket?
+  def connected?
+    @connected
+  end
+
+  # Establishes a persistent connection to the UDP socket relieving
+  # `send_to_socket` of doing host lookups with every send
+  def connect
+    socket.connect(@host, @port)
+    @connected = true
+  rescue SocketError => e
+    warn e
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
@@ -373,7 +389,11 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
-    socket.send(message, 0, @host, @port)
+    if connected?
+      socket.send(message, 0)
+    else
+      socket.send(message, 0, @host, @port)
+    end
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
     nil
