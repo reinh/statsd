@@ -17,6 +17,7 @@ Gem::Specification.new("statsd-ruby", "1.2.1") do |s|
     s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   end
 
+  s.add_runtime_dependency "json"
 
   s.add_development_dependency "minitest", ">= 3.2.0"
   s.add_development_dependency "yard"
