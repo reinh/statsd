@@ -1,6 +1,7 @@
 require 'socket'
 require 'forwardable'
 require 'json'
+require 'thread'
 
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
@@ -74,7 +75,7 @@ class Statsd
 
     def flush
       unless @backlog.empty?
-        @statsd.send_to_socket @backlog.join("\n")
+        @statsd.send(:send_to_socket, @backlog.join("\n"))
         @backlog.clear
       end
     end
@@ -388,6 +389,7 @@ class Statsd
       rate = "|@#{sample_rate}" unless sample_rate == 1
       send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
     end
+    nil
   end
 
   def socket
@@ -397,4 +399,71 @@ class Statsd
   def addr_family
     Addrinfo.udp(@host, @port).ipv6? ? Socket::AF_INET6 : Socket::AF_INET
   end
+
+
+  # = Singlethread: Statsd wrapped in a single I/O thread.
+  #
+  # @example Start a single I/O thread client:
+  #   $statsd = Statsd::Singlethread.new Statsd.new 'localhost', 8125
+  #   batch = Statsd::Batch.new($statsd)
+  #   batch.increment 'garets'
+  #   batch.timing 'glork', 320
+  #   batch.gauge 'bork', 100
+  #   batch.flush
+  #   $statsd.stop
+  #
+  # This class is most useful in environments where statsd is called from Fiber
+  # pools and the Thread.local changes cause large numbers of sockets to be
+  # opened.
+  class Singlethread
+
+    def initialize(statsd)
+      @statsd = statsd
+      @queue = Queue.new
+      @thread = Thread.new do
+        while nab = @queue.pop
+          begin
+            @statsd.__send__(nab[0], *nab[1], &nab[2])
+          rescue
+          end
+        end
+      end
+    end
+
+    def stop
+      @queue << nil
+      @thread.join
+    end
+
+    # Readable properties are available, but they are not necessarily thread
+    # safe. Attribute setters are enqueued.
+    properties = [:host, :port, :prefix, :postfix, :batch_size]
+
+    extend Forwardable
+    def_delegators :@statsd, *properties
+
+    # This class responds to all the same methods as Statsd.
+    (
+      Statsd.public_instance_methods(false) - ([:batch] + properties)
+    ).each do |name|
+
+      class_eval <<-RUBY
+        def #{name}(*args)
+          @queue << [:#{name}, args, (Proc.new if block_given?)]
+          nil
+        end
+      RUBY
+    end
+
+    # See Statsd#batch for general usage. The batches sent 
+    def batch(&block)
+      Batch.new(self).easy &block
+    end
+
+    protected
+    def send_to_socket(*args)
+      @queue << [:send_to_socket, args]
+    end
+  end
+
 end
