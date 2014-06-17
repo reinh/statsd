@@ -1,10 +1,6 @@
 require 'helper'
 
 describe Statsd do
-  class Statsd
-    public :socket
-  end
-
   before do
     @statsd = Statsd.new('localhost', 1234)
     @socket = Thread.current[:statsd_socket] = FakeUDPSocket.new
