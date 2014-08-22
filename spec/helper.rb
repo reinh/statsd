@@ -1,9 +1,9 @@
 require 'bundler/setup'
-require 'minitest/autorun'
 
 require 'simplecov'
 SimpleCov.start
 
+require 'minitest/autorun'
 require 'statsd'
 require 'logger'
 
