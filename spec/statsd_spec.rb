@@ -371,6 +371,7 @@ describe Statsd do
     end
 
   end
+
 end
 
 describe Statsd do
@@ -406,6 +407,20 @@ describe Statsd do
       socket.bind(host, port)
 
       statsd = Statsd.new(host, port)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+
+    it "should be able to pre-connect" do
+      Thread.current[:statsd_socket] = nil
+      socket = UDPSocket.new
+      host, port = 'localhost', 12348
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port)
+      statsd.connect
+      statsd.connected?.must_equal true
       statsd.increment('foobar')
       message = socket.recvfrom(16).first
       message.must_equal 'foobar:1|c'
