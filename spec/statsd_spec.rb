@@ -23,6 +23,17 @@ describe Statsd do
       statsd.host.must_equal '127.0.0.1'
       statsd.port.must_equal 8125
     end
+
+    it "uses the thread's socket by default" do
+      @statsd.socket.must_equal @socket
+    end
+
+    it "can use a single socket passed in" do
+      statsd_with_socket = Statsd.new('foo', 1234, :socket)
+      statsd_with_socket.socket.must_equal :socket
+      Thread.current[:statsd_socket] = FakeUDPSocket.new
+      statsd_with_socket.socket.must_equal :socket
+    end
   end
 
   describe "#host and #port" do

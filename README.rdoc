@@ -27,6 +27,9 @@ Bundler:
   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
   statsd.increment 'activate'
 
+  # Create a Statsd client that uses a single socket
+  statsd = Statsd.new 'localhost', 9125, UDPSocket.new
+
 = Testing
 
 Run the specs with <tt>rake spec</tt>
