@@ -412,3 +412,19 @@ describe Statsd do
     end
   end
 end if ENV['LIVE']
+
+describe Statsd do  
+  describe "with a real TCP socket" do
+    it "should actually send stuff over the socket" do
+      Thread.current[:statsd_socket] = nil
+      host, port = 'localhost', 12345
+      socket = TCPSocket.new host, port
+      socket.bind(host, port)
+
+      statsd = Statsd.new(host, port)
+      statsd.increment('foobar')
+      message = socket.recvfrom(16).first
+      message.must_equal 'foobar:1|c'
+    end
+  end
+end if ENV['LIVE_TCP']
