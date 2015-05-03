@@ -294,6 +294,19 @@ describe Statsd do
       @socket.recv.must_equal ['Statsd.SomeClass:1|c']
     end
 
+    describe "custom delimiter" do
+      before do
+        @statsd.delimiter = "-"
+      end
+
+      it "should replace ruby constant delimiter with custom delimiter" do
+        class Statsd::SomeOtherClass; end
+        @statsd.increment(Statsd::SomeOtherClass, 1)
+
+        @socket.recv.must_equal ['Statsd-SomeOtherClass:1|c']
+      end
+    end
+
     it "should replace statsd reserved chars in the stat name" do
       @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
       @socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
