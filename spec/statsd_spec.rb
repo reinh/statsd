@@ -23,6 +23,10 @@ describe Statsd do
       statsd.host.must_equal '127.0.0.1'
       statsd.port.must_equal 8125
     end
+
+    it "should set delimiter to period by default" do
+      @statsd.delimiter.must_equal "."
+    end
   end
 
   describe "#host and #port" do
@@ -51,6 +55,18 @@ describe Statsd do
     it "should allow an IPv6 address" do
       @statsd.host = '::1'
       @statsd.host.must_equal '::1'
+    end
+  end
+
+  describe "#delimiter" do 
+    it "should set delimiter" do
+      @statsd.delimiter = "-"
+      @statsd.delimiter.must_equal "-"
+    end
+    
+    it "should set default to period if not given a value" do
+      @statsd.delimiter = nil
+      @statsd.delimiter.must_equal "."
     end
   end
 
@@ -276,6 +292,19 @@ describe Statsd do
       @statsd.increment(Statsd::SomeClass, 1)
 
       @socket.recv.must_equal ['Statsd.SomeClass:1|c']
+    end
+
+    describe "custom delimiter" do
+      before do
+        @statsd.delimiter = "-"
+      end
+
+      it "should replace ruby constant delimiter with custom delimiter" do
+        class Statsd::SomeOtherClass; end
+        @statsd.increment(Statsd::SomeOtherClass, 1)
+
+        @socket.recv.must_equal ['Statsd-SomeOtherClass:1|c']
+      end
     end
 
     it "should replace statsd reserved chars in the stat name" do

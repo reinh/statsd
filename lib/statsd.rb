@@ -50,7 +50,8 @@ class Statsd
       :host, :host=,
       :port, :port=,
       :prefix,
-      :postfix
+      :postfix,
+      :delimiter, :delimiter=
 
     attr_accessor :batch_size
 
@@ -227,6 +228,9 @@ class Statsd
   # a postfix to append to all metrics
   attr_reader :postfix
 
+  # The replacement of :: on ruby module names when transformed to statsd metric names
+  attr_reader :delimiter
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
@@ -236,6 +240,7 @@ class Statsd
   # @param [Integer] port your statsd port
   def initialize(host = '127.0.0.1', port = 8125)
     self.host, self.port = host, port
+    self.delimiter = "."
     @prefix = nil
     @batch_size = 10
     @postfix = nil
@@ -268,6 +273,12 @@ class Statsd
   #   Writes are not thread safe.
   def port=(port)
     @port = port || 8125
+  end
+
+  # @attribute [w] stat_delimiter
+  #   Allows for custom delimiter replacement for :: when Ruby modules are transformed to statsd metric name
+  def delimiter=(delimiter)
+    @delimiter = delimiter || "."
   end
 
   # Sends an increment (count = 1) for the given stat to the statsd server.
@@ -384,7 +395,7 @@ class Statsd
   def send_stats(stat, delta, type, sample_rate=1)
     if sample_rate == 1 or rand < sample_rate
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
-      stat = stat.to_s.gsub('::', '.').tr(':|@', '_')
+      stat = stat.to_s.gsub('::', delimiter).tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
       send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
     end
