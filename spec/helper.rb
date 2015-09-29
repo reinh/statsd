@@ -16,6 +16,10 @@ class FakeUDPSocket
     @buffer.push [message]
   end
 
+  def sendmsg(message)
+    @buffer.push [message]
+  end
+
   def recv
     @buffer.shift
   end

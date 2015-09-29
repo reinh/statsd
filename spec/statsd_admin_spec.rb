@@ -1,16 +1,28 @@
 require 'helper'
 
 describe Statsd::Admin do
-  class Statsd::Admin
-    public :socket
-  end
 
   before do
+    class Statsd::Admin
+      o, $VERBOSE = $VERBOSE, nil
+      alias connect_old connect
+      def connect
+        $connect_count ||= 0
+        $connect_count += 1
+      end
+      $VERBOSE = o
+    end
     @admin = Statsd::Admin.new('localhost', 1234)
-    @socket = Thread.current[:statsd_admin_socket] = FakeTCPSocket.new
+    @socket = @admin.instance_variable_set(:@socket, FakeTCPSocket.new)
   end
 
-  after { Thread.current[:statsd_socket] = nil }
+  after do
+    class Statsd::Admin
+      o, $VERBOSE = $VERBOSE, nil
+      alias connect connect_old
+      $VERBOSE = o
+    end
+  end
 
   describe "#initialize" do
     it "should set the host and port" do
@@ -90,6 +102,14 @@ describe Statsd::Admin do
       result.must_be_kind_of Hash
       result["whatever"].must_equal 0
       @socket.readline.must_equal "stats\n"
+    end
+  end
+
+  describe "#connect" do
+    it "should reconnect" do
+      c = $connect_count
+      @admin.connect
+      ($connect_count - c).must_equal 1
     end
   end
 end

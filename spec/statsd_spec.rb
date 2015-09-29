@@ -1,16 +1,28 @@
 require 'helper'
 
 describe Statsd do
-  class Statsd
-    public :socket
-  end
-
   before do
+    class Statsd
+      o, $VERBOSE = $VERBOSE, nil
+      alias connect_old connect
+      def connect
+        $connect_count ||= 1
+        $connect_count += 1
+      end
+      $VERBOSE = o
+    end
+
     @statsd = Statsd.new('localhost', 1234)
-    @socket = Thread.current[:statsd_socket] = FakeUDPSocket.new
+    @socket = @statsd.instance_variable_set(:@socket, FakeUDPSocket.new)
   end
 
-  after { Thread.current[:statsd_socket] = nil }
+  after do
+    class Statsd
+      o, $VERBOSE = $VERBOSE, nil
+      alias connect connect_old
+      $VERBOSE = o
+    end
+  end
 
   describe "#initialize" do
     it "should set the host and port" do
@@ -317,7 +329,7 @@ describe Statsd do
     before do
       require 'stringio'
       Statsd.logger = Logger.new(@log = StringIO.new)
-      @socket.instance_eval { def send(*) raise SocketError end }
+      @socket.instance_eval { def sendmsg(*) raise SocketError end }
     end
 
     it "should ignore socket errors" do
@@ -387,57 +399,65 @@ describe Statsd do
 
   end
 
-  describe "thread safety" do
-
-    it "should use a thread local socket" do
-      Thread.current[:statsd_socket].must_equal @socket
-      @statsd.send(:socket).must_equal @socket
+  describe "#connect" do
+    it "should reconnect" do
+      c = $connect_count
+      @statsd.connect
+      ($connect_count - c).must_equal 1
     end
-
-    it "should create a new socket when used in a new thread" do
-      sock = @statsd.send(:socket)
-      Thread.new { Thread.current[:statsd_socket] }.value.wont_equal sock
-    end
-
   end
+
 end
 
 describe Statsd do
   describe "with a real UDP socket" do
     it "should actually send stuff over the socket" do
-      Thread.current[:statsd_socket] = nil
-      socket = UDPSocket.new
-      host, port = 'localhost', 12345
-      socket.bind(host, port)
+      family = Addrinfo.udp(UDPSocket.getaddress('localhost'), 0).afamily
+      begin
+        socket = UDPSocket.new family
+        host, port = 'localhost', 0
+        socket.bind(host, port)
+        port = socket.addr[1]
 
-      statsd = Statsd.new(host, port)
-      statsd.increment('foobar')
-      message = socket.recvfrom(16).first
-      message.must_equal 'foobar:1|c'
+        statsd = Statsd.new(host, port)
+        statsd.increment('foobar')
+        message = socket.recvfrom(16).first
+        message.must_equal 'foobar:1|c'
+      ensure
+        socket.close
+      end
     end
 
     it "should send stuff over an IPv4 socket" do
-      Thread.current[:statsd_socket] = nil
-      socket = UDPSocket.new Socket::AF_INET
-      host, port = '127.0.0.1', 12346
-      socket.bind(host, port)
+      begin
+        socket = UDPSocket.new Socket::AF_INET
+        host, port = '127.0.0.1', 0
+        socket.bind(host, port)
+        port = socket.addr[1]
 
-      statsd = Statsd.new(host, port)
-      statsd.increment('foobar')
-      message = socket.recvfrom(16).first
-      message.must_equal 'foobar:1|c'
+        statsd = Statsd.new(host, port)
+        statsd.increment('foobar')
+        message = socket.recvfrom(16).first
+        message.must_equal 'foobar:1|c'
+      ensure
+        socket.close
+      end
     end
 
     it "should send stuff over an IPv6 socket" do
-      Thread.current[:statsd_socket] = nil
-      socket = UDPSocket.new Socket::AF_INET6
-      host, port = '::1', 12347
-      socket.bind(host, port)
+      begin
+        socket = UDPSocket.new Socket::AF_INET6
+        host, port = '::1', 0
+        socket.bind(host, port)
+        port = socket.addr[1]
 
-      statsd = Statsd.new(host, port)
-      statsd.increment('foobar')
-      message = socket.recvfrom(16).first
-      message.must_equal 'foobar:1|c'
+        statsd = Statsd.new(host, port)
+        statsd.increment('foobar')
+        message = socket.recvfrom(16).first
+        message.must_equal 'foobar:1|c'
+      ensure
+        socket.close
+      end
     end
   end
-end if ENV['LIVE']
+end

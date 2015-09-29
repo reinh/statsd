@@ -31,8 +31,6 @@ Bundler:
 
 Run the specs with <tt>rake spec</tt>
 
-Run the specs and include live integration specs with <tt>LIVE=true rake spec</tt>. Note: This will test over a real UDP socket.
-
 = Performance
 
 * A short note about DNS: If you use a dns name for the host option, then you will want to use a local caching dns service for optimial performance (e.g. nscd).
