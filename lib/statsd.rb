@@ -260,7 +260,8 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host = '127.0.0.1', port = 8125)
+  # @param [Symbol] :tcp for TCP, :udp or any other value for UDP
+  def initialize(host = '127.0.0.1', port = 8125, protocol = :udp)
     @host = host || '127.0.0.1'
     @port = port || 8125
     self.delimiter = "."
@@ -268,6 +269,7 @@ class Statsd
     @batch_size = 10
     @postfix = nil
     @socket = nil
+    @protocol = protocol || :udp
     @s_mu = Mutex.new
     connect
   end
@@ -419,8 +421,14 @@ class Statsd
       rescue
         # Errors are ignored on reconnects.
       end
-      @socket = UDPSocket.new Addrinfo.udp(@host, @port).afamily
-      @socket.connect host, port
+
+      case @protocol
+      when :tcp
+        @socket = TCPSocket.new @host, @port
+      else
+        @socket = UDPSocket.new Addrinfo.udp(@host, @port).afamily
+        @socket.connect host, port
+      end
     end
   end
 

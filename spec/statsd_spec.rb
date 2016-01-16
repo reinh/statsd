@@ -460,4 +460,54 @@ describe Statsd do
       end
     end
   end
+
+  describe "supports TCP sockets" do
+    it "should connect to and send stats over TCPv4" do
+      begin
+        host, port = '127.0.0.1', 0
+        server = TCPServer.new host, port
+        port = server.addr[1]
+
+        socket = nil
+        Thread.new { socket = server.accept }
+
+        statsd = Statsd.new(host, port, :tcp)
+        statsd.increment('foobar')
+
+        Timeout.timeout(5) do
+          Thread.pass while socket == nil
+        end
+
+        message = socket.recvfrom(16).first
+        message.must_equal 'foobar:1|c'
+      ensure
+        socket.close if socket
+        server.close
+      end
+    end
+
+    it "should connect to and send stats over TCPv6" do
+      begin
+        host, port = '::1', 0
+        server = TCPServer.new host, port
+        port = server.addr[1]
+
+        socket = nil
+        Thread.new { socket = server.accept }
+
+        statsd = Statsd.new(host, port, :tcp)
+        statsd.increment('foobar')
+
+        Timeout.timeout(5) do
+          Thread.pass while socket == nil
+        end
+
+        message = socket.recvfrom(16).first
+        message.must_equal 'foobar:1|c'
+      ensure
+        socket.close if socket
+        server.close
+      end
+    end
+  end
 end
