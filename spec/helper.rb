@@ -14,10 +14,12 @@ class FakeUDPSocket
 
   def send(message, *rest)
     @buffer.push [message]
+    message.length
   end
 
   def sendmsg(message)
     @buffer.push [message]
+    message.length
   end
 
   def recv

@@ -436,7 +436,24 @@ class Statsd
 
   def send_to_socket(message)
     self.class.logger.debug { "Statsd: #{message}" } if self.class.logger
-    socket.sendmsg(message)
+
+    retries = 0
+    n = 0
+    while true
+      # sendmsg(2) is atomic, however, in stream cases (TCP) the socket is left
+      # in an inconsistent state if a partial message is written. If that case
+      # occurs, the socket is closed down and we retry on a new socket.
+      n = socket.sendmsg(message)
+
+      if n == message.length
+        break
+      end
+
+      connect
+      retries += 1
+      raise "statsd: Failed to sendmsg after #{retries} attempts" if retries >= 5
+    end
+    n
   rescue => boom
     self.class.logger.error { "Statsd: #{boom.class} #{boom}" } if self.class.logger
     nil
