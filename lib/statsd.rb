@@ -227,6 +227,9 @@ class Statsd
 
   # a postfix to append to all metrics
   attr_reader :postfix
+  
+  # the protocol to use when sending messages to the server (tcp or udp)
+  attr_reader :protocol
 
   # The replacement of :: on ruby module names when transformed to statsd metric names
   attr_reader :delimiter
@@ -238,12 +241,13 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  def initialize(host = '127.0.0.1', port = 8125)
+  def initialize(host = '127.0.0.1', port = 8125, protocol = :udp)
     self.host, self.port = host, port
     self.delimiter = "."
     @prefix = nil
     @batch_size = 10
     @postfix = nil
+    @protocol = protocol || :udp
   end
 
   # @attribute [w] namespace
@@ -402,7 +406,12 @@ class Statsd
   end
 
   def socket
-    Thread.current[:statsd_socket] ||= UDPSocket.new addr_family
+    Thread.current[:statsd_socket] ||= build_socket
+  end
+
+  def build_socket
+    return UDPSocket.new(addr_family) if @protocol == :udp
+    TCPSocket.new(@host, @port)
   end
 
   def addr_family
