@@ -1,8 +1,21 @@
 ---
 language: ruby
+
 rvm:
-- 1.9.3
-- 2.0
-- 2.1
-- 2.2
-- jruby-19mode
+  - 1.9.3
+  - 2.0.0
+  - 2.1
+  - 2.2
+  - 2.3.0
+  - rbx-2
+  - jruby
+  - jruby-head
+  - ruby-head
+
+sudo: false
+
+matrix:
+  allow_failures:
+    - rvm: rbx-2
+    - rvm: ruby-head
+    - rvm: jruby-head
