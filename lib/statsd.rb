@@ -390,10 +390,14 @@ class Statsd
   # @example Report the time (in ms) taken to activate an account
   #   $statsd.time('account.activate') { @account.activate! }
   def time(stat, sample_rate=1)
+    exception_raised = false
     start = Time.now
-    result = yield
-    timing(stat, ((Time.now - start) * 1000).round, sample_rate)
-    result
+    yield
+  rescue
+    exception_raised = true
+    raise
+  ensure
+    timing(stat, ((Time.now - start) * 1000).round, sample_rate) unless exception_raised
   end
 
   # Creates and yields a Batch that can be used to batch instrument reports into

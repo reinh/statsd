@@ -170,6 +170,32 @@ describe Statsd do
       result.must_equal 'test'
     end
 
+    describe "when given a block with an explicit return" do
+      it "should format the message according to the statsd spec" do
+        lambda { @statsd.time('foobar') { return 'test' } }.call
+        @socket.recv.must_equal ['foobar:0|ms']
+      end
+
+      it "should return the result of the block" do
+        result = lambda { @statsd.time('foobar') { return 'test' } }.call
+        result.must_equal 'test'
+      end
+    end
+
+    describe "when given a block which throws an exception" do
+      it "should not send" do
+        begin
+          @statsd.time('foobar') { raise 'test' }
+        rescue
+        end
+        @socket.recv.must_equal nil
+      end
+
+      it "should not block the exception" do
+        proc { @statsd.time('foobar') { raise 'test' } }.must_raise RuntimeError
+      end
+    end
+
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
 
