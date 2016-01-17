@@ -12,12 +12,7 @@ class FakeUDPSocket
     @buffer = []
   end
 
-  def send(message, *rest)
-    @buffer.push [message]
-    message.length
-  end
-
-  def sendmsg(message)
+  def write(message)
     @buffer.push [message]
     message.length
   end

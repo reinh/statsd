@@ -329,7 +329,7 @@ describe Statsd do
     before do
       require 'stringio'
       Statsd.logger = Logger.new(@log = StringIO.new)
-      @socket.instance_eval { def sendmsg(*) raise SocketError end }
+      @socket.instance_eval { def write(*) raise SocketError end }
     end
 
     it "should ignore socket errors" do
