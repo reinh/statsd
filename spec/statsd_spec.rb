@@ -182,17 +182,6 @@ describe Statsd do
       end
     end
 
-    describe "when given a block which throws an exception" do
-      it "should not send" do
-        @statsd.time('foobar') { raise 'test' } rescue nil
-        @socket.recv.must_equal nil
-      end
-
-      it "should not block the exception" do
-        proc { @statsd.time('foobar') { raise 'test' } }.must_raise RuntimeError
-      end
-    end
-
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
 

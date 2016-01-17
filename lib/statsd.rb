@@ -393,7 +393,7 @@ class Statsd
     start = Time.now
     result = yield
   ensure
-    timing(stat, ((Time.now - start) * 1000).round, sample_rate) unless $!
+    timing(stat, ((Time.now - start) * 1000).round, sample_rate)
     result
   end
 
