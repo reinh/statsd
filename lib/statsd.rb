@@ -392,7 +392,8 @@ class Statsd
   def time(stat, sample_rate=1)
     start = Time.now
     result = yield
-    timing(stat, ((Time.now - start) * 1000).round, sample_rate)
+  ensure
+    timing(stat, ((Time.now - start) * 1000).round, sample_rate) unless $!
     result
   end
 
