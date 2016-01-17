@@ -407,7 +407,7 @@ class Statsd
   #     batch.gauge('user.count', User.count)
   #   end
   def batch(&block)
-    Batch.new(self).easy &block
+    Batch.new(self).easy(&block)
   end
 
   # Reconnects the socket, useful if the address of the statsd has changed. This
