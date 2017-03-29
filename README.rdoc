@@ -52,18 +52,20 @@ Run the specs with <tt>rake spec</tt>
 == Contributors
 
 * Rein Henrichs
-* Ray Krueger
-* Jeremy Kemper
-* Ryan Tomayko
-* Gabriel Burt
-* Rick Olson
-* Trae Robrock
+* Alex Williams
+* Andrew Meyer
+* Chris Gaffney
+* Cody Cutrer
 * Corey Donohoe
-* James Tucker
 * Dotan Nahum
+* Erez Rabih
 * Eric Chapweske
+* Gabriel Burt
 * Hannes Georg
+* James Tucker
+* Jeremy Kemper
 * John Nunemaker
+* Lann Martin
 * Mahesh Murthy
 * Manu J
 * Matt Sanford
@@ -73,7 +75,11 @@ Run the specs with <tt>rake spec</tt>
 * Peter Mounce
 * Ray Krueger
 * Reed Lipman
+* rick
+* Ryan Tomayko
+* Schuyler Erle
 * Thomas Whaples
+* Trae Robrock
 
 == Copyright
 
