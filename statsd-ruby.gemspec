@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
-Gem::Specification.new("statsd-ruby", "1.3.0") do |s|
-  s.authors = ["Rein Henrichs"]
+Gem::Specification.new("statsd-ruby", "1.4.0") do |s|
+  s.authors =  `git log --format='%aN' | sort -u`.split("\n")
   s.email = "reinh@reinh.com"
 
   s.summary = "A Ruby StatsD client"
