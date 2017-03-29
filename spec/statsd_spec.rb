@@ -461,6 +461,51 @@ describe Statsd do
 
 end
 
+describe Statsd::Singlethread do
+  before do
+    @statsd = Statsd::Singlethread.new Statsd.new('localhost', 1234)
+    @socket = @statsd.instance_variable_get(:@thread)[:statsd_socket] =
+      FakeUDPSocket.new
+  end
+
+  after do
+    @statsd.stop
+  end
+
+  it "should have all of the statsd methods defined" do
+    Statsd.public_instance_methods(false).each do |m|
+      @statsd.must_respond_to m
+    end
+  end
+
+  it "should pass through the read side of normal properties" do
+    @statsd.host.must_equal "localhost"
+    @statsd.port.must_equal 1234
+    @statsd.prefix.must_equal nil
+    @statsd.postfix.must_equal nil
+    @statsd.batch_size.must_equal 10
+  end
+
+  it "should perform normally" do
+    @statsd.increment('foobar')
+    @statsd.stop # allow a flush
+    @socket.recv.must_equal ['foobar:1|c']
+  end
+
+  it "should enqueue batches of operations" do
+    @statsd.stop
+    q = @statsd.instance_variable_get(:@queue)
+    @statsd.batch do |s|
+      s.increment "a"
+      s.increment "b"
+      s.increment "c"
+      q.must_be_empty
+    end
+    q.pop.must_equal [:send_to_socket, ["a:1|c\nb:1|c\nc:1|c"]]
+  end
+
+end
+
 describe Statsd do
   describe "with a real UDP socket" do
     it "should actually send stuff over the socket" do
