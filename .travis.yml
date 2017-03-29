@@ -2,14 +2,13 @@
 language: ruby
 
 rvm:
-  - 1.9.3
   - 2.0.0
   - 2.1
   - 2.2
   - 2.3.0
+  - 2.4.0
   - rbx-2
   - jruby
-  - jruby-head
   - ruby-head
 
 sudo: false
@@ -19,3 +18,4 @@ matrix:
     - rvm: rbx-2
     - rvm: ruby-head
     - rvm: jruby
+    - rvm: jruby-head
