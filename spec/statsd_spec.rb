@@ -212,7 +212,7 @@ describe Statsd do
     describe "when the sample rate is less than a random value [0,1]" do
       before { class << @statsd; def rand; 1; end; end } # ensure no delivery
       it "should not send" do
-        @statsd.timing('foobar', 500, 0.5).must_equal nil
+        assert_nil @statsd.timing('foobar', 500, 0.5)
       end
     end
 
@@ -279,7 +279,7 @@ describe Statsd do
         [nil, false, ''].each do |value|
           @statsd.postfix = 'a postfix'
           @statsd.postfix = value
-          @statsd.postfix.must_equal nil
+          assert_nil @statsd.postfix
         end
       end
     end
@@ -345,7 +345,7 @@ describe Statsd do
     end
 
     it "should ignore socket errors" do
-      @statsd.increment('foobar').must_equal nil
+      assert_nil @statsd.increment('foobar')
     end
 
     it "should log socket errors" do
@@ -359,12 +359,24 @@ describe Statsd do
       @statsd.batch_size.must_equal 10
     end
 
+    it "should have a default batch byte size of nil" do
+      assert_nil @statsd.batch_byte_size
+    end
+
     it "should have a modifiable batch size" do
       @statsd.batch_size = 7
       @statsd.batch_size.must_equal 7
       @statsd.batch do |b|
         b.batch_size.must_equal 7
       end
+
+      @statsd.batch_size = nil
+      @statsd.batch_byte_size = 1472
+      @statsd.batch do |b|
+        assert_nil b.batch_size
+        b.batch_byte_size.must_equal 1472
+      end
+
     end
 
     it "should flush the batch at the batch size or at the end of the block" do
@@ -379,6 +391,34 @@ describe Statsd do
       end
 
       @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+    end
+
+    it "should flush based on batch byte size" do
+      @statsd.batch do |b|
+        b.batch_size = nil
+        b.batch_byte_size = 22
+
+        # The first two should flush, the last will be flushed when the
+        # block is done.
+        3.times { b.increment('foobar') }
+
+        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+      end
+
+      @socket.recv.must_equal ["foobar:1|c"]
+    end
+
+    it "should flush immediately when the queue is exactly a batch size" do
+      @statsd.batch do |b|
+        b.batch_size = nil
+        b.batch_byte_size = 21
+
+        # The first two should flush, the last will be flushed when the
+        # block is done.
+        2.times { b.increment('foobar') }
+
+        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+      end
     end
 
     it "should not flush to the socket if the backlog is empty" do

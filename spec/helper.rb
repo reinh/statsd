@@ -6,6 +6,7 @@ SimpleCov.start
 require 'minitest/autorun'
 require 'statsd'
 require 'logger'
+require 'timeout'
 
 class FakeUDPSocket
   def initialize

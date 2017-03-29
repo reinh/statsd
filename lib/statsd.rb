@@ -53,13 +53,15 @@ class Statsd
       :postfix,
       :delimiter, :delimiter=
 
-    attr_accessor :batch_size
+    attr_accessor :batch_size, :batch_byte_size
 
     # @param [Statsd] requires a configured Statsd instance
     def initialize(statsd)
       @statsd = statsd
       @batch_size = statsd.batch_size
+      @batch_byte_size = statsd.batch_byte_size
       @backlog = []
+      @backlog_bytesize = 0
     end
 
     # @yields [Batch] yields itself
@@ -77,14 +79,26 @@ class Statsd
       unless @backlog.empty?
         @statsd.send_to_socket @backlog.join("\n")
         @backlog.clear
+        @backlog_bytesize = 0
       end
     end
 
     protected
 
     def send_to_socket(message)
+      # this message wouldn't fit; flush the queue. note that we don't have
+      # to do this for message based flushing, because we're incrementing by
+      # one, so the post-queue check will always catch it
+      if (@batch_byte_size && @backlog_bytesize + message.bytesize + 1 > @batch_byte_size)
+        flush
+      end
       @backlog << message
-      if @backlog.size >= @batch_size
+      @backlog_bytesize += message.bytesize
+      # skip the interleaved newline for the first item
+      @backlog_bytesize += 1 if @backlog.length != 1
+      # if we're precisely full now, flush
+      if (@batch_size && @backlog.size == @batch_size) ||
+          (@batch_byte_size && @backlog_bytesize == @batch_byte_size)
         flush
       end
     end
@@ -244,8 +258,11 @@ class Statsd
   # StatsD namespace prefix, generated from #namespace
   attr_reader :prefix
 
-  # The default batch size for new batches (default: 10)
+  # The default batch size for new batches. Set to nil to use batch_byte_size (default: 10)
   attr_accessor :batch_size
+
+  # The default batch size, in bytes, for new batches (default: default nil; use batch_size)
+  attr_accessor :batch_byte_size
 
   # a postfix to append to all metrics
   attr_reader :postfix
@@ -267,6 +284,7 @@ class Statsd
     self.delimiter = "."
     @prefix = nil
     @batch_size = 10
+    @batch_byte_size = nil
     @postfix = nil
     @socket = nil
     @protocol = protocol || :udp
