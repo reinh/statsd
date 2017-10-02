@@ -70,12 +70,12 @@ describe Statsd do
     end
   end
 
-  describe "#delimiter" do 
+  describe "#delimiter" do
     it "should set delimiter" do
       @statsd.delimiter = "-"
       @statsd.delimiter.must_equal "-"
     end
-    
+
     it "should set default to period if not given a value" do
       @statsd.delimiter = nil
       @statsd.delimiter.must_equal "."
@@ -95,6 +95,13 @@ describe Statsd do
         @socket.recv.must_equal ['foobar:1|c|@0.5']
       end
     end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.increment('foobar', tags: {some: :tag})
+        @socket.recv.must_equal ['foobar,some=tag:1|c']
+      end
+    end
   end
 
   describe "#decrement" do
@@ -108,6 +115,13 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.decrement('foobar', 0.5)
         @socket.recv.must_equal ['foobar:-1|c|@0.5']
+      end
+    end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.decrement('foobar', tags: {some: :tag})
+        @socket.recv.must_equal ['foobar,some=tag:-1|c']
       end
     end
   end
@@ -127,6 +141,13 @@ describe Statsd do
         @socket.recv.must_equal ['begrutten-suffusion:536|g|@0.1']
       end
     end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the stasd spec" do
+        @statsd.gauge('begrutten-suffusion', 536, tags: {some: :tag})
+        @socket.recv.must_equal ['begrutten-suffusion,some=tag:536|g']
+      end
+    end
   end
 
   describe "#timing" do
@@ -142,6 +163,13 @@ describe Statsd do
         @socket.recv.must_equal ['foobar:500|ms|@0.5']
       end
     end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the stasd spec" do
+        @statsd.timing('foobar', 500, tags: {some: :tag})
+        @socket.recv.must_equal ['foobar,some=tag:500|ms']
+      end
+    end
   end
 
   describe "#set" do
@@ -155,6 +183,13 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.set('foobar', 500, 0.5)
         @socket.recv.must_equal ['foobar:500|s|@0.5']
+      end
+    end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the stasd spec" do
+        @statsd.set('foobar', 765, tags: {some: :tag})
+        @socket.recv.must_equal ['foobar,some=tag:765|s']
       end
     end
   end
@@ -188,6 +223,13 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.time('foobar', 0.5) { 'test' }
         @socket.recv.must_equal ['foobar:0|ms|@0.5']
+      end
+    end
+
+    describe "with InfluxDB tags" do
+      it "should format the message according to the stasd spec" do
+        @statsd.time('foobar', tags: {some: :tag}) { 'test' }
+        @socket.recv.must_equal ['foobar,some=tag:0|ms']
       end
     end
   end
@@ -334,6 +376,27 @@ describe Statsd do
     it "should replace statsd reserved chars in the stat name" do
       @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
       @socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
+    end
+  end
+
+  describe "tags values" do
+    class Statsd::SomeClass; end
+    class Statsd::SomeWorker; end
+
+    it "should replace ruby constant delimeter with graphite package name" do
+      @statsd.increment(Statsd::SomeClass, 1, tags: { worker: Statsd::SomeWorker })
+      @socket.recv.must_equal ['Statsd.SomeClass,worker=Statsd.SomeWorker:1|c']
+    end
+
+    describe "custom delimiter" do
+      before do
+        @statsd.delimiter = "-"
+      end
+
+      it "should replace ruby constant delimiter with custom delimiter" do
+        @statsd.increment(Statsd::SomeClass, 1, tags: { worker: Statsd::SomeWorker })
+        @socket.recv.must_equal ['Statsd-SomeClass,worker=Statsd-SomeWorker:1|c']
+      end
     end
   end
 
