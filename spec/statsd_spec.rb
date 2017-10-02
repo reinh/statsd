@@ -70,12 +70,12 @@ describe Statsd do
     end
   end
 
-  describe "#delimiter" do 
+  describe "#delimiter" do
     it "should set delimiter" do
       @statsd.delimiter = "-"
       @statsd.delimiter.must_equal "-"
     end
-    
+
     it "should set default to period if not given a value" do
       @statsd.delimiter = nil
       @statsd.delimiter.must_equal "."
@@ -376,6 +376,27 @@ describe Statsd do
     it "should replace statsd reserved chars in the stat name" do
       @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
       @socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
+    end
+  end
+
+  describe "tags values" do
+    class Statsd::SomeClass; end
+    class Statsd::SomeWorker; end
+
+    it "should replace ruby constant delimeter with graphite package name" do
+      @statsd.increment(Statsd::SomeClass, 1, tags: { worker: Statsd::SomeWorker })
+      @socket.recv.must_equal ['Statsd.SomeClass,worker=Statsd.SomeWorker:1|c']
+    end
+
+    describe "custom delimiter" do
+      before do
+        @statsd.delimiter = "-"
+      end
+
+      it "should replace ruby constant delimiter with custom delimiter" do
+        @statsd.increment(Statsd::SomeClass, 1, tags: { worker: Statsd::SomeWorker })
+        @socket.recv.must_equal ['Statsd-SomeClass,worker=Statsd-SomeWorker:1|c']
+      end
     end
   end
 

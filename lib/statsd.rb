@@ -464,18 +464,22 @@ class Statsd
 
   def send_stats(stat, delta, type, sample_rate=1, tags: {})
     if sample_rate == 1 or rand < sample_rate
-      # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
-      stat = stat.to_s.gsub('::', delimiter).tr(':|@', '_')
+      stat = sanitize(stat)
       rate = "|@#{sample_rate}" unless sample_rate == 1
       parsed_tags =
         if tags.empty?
           ""
         else
-          "," + tags.map {|key, value| "#{key}=#{value}" }.join(",")
+          "," + tags.map {|key, value| "#{key}=#{sanitize(value)}" }.join(",")
         end
 
       send_to_socket "#{prefix}#{stat}#{postfix}#{parsed_tags}:#{delta}|#{type}#{rate}"
     end
+  end
+
+  def sanitize(value)
+    # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
+    value.to_s.gsub('::', delimiter).tr(':|@', '_')
   end
 
   def socket
