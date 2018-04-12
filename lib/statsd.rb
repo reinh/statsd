@@ -55,7 +55,7 @@ class Statsd
 
     attr_accessor :batch_size, :batch_byte_size
 
-    # @param [Statsd] requires a configured Statsd instance
+    # @param [Statsd] statsd requires a configured Statsd instance
     def initialize(statsd)
       @statsd = statsd
       @batch_size = statsd.batch_size
@@ -64,7 +64,7 @@ class Statsd
       @backlog_bytesize = 0
     end
 
-    # @yields [Batch] yields itself
+    # @yield [Batch] yields itself
     #
     # A convenience method to ensure that data is not lost in the event of an
     # exception being thrown. Batches will be transmitted on the parent socket
@@ -277,7 +277,7 @@ class Statsd
 
   # @param [String] host your statsd host
   # @param [Integer] port your statsd port
-  # @param [Symbol] :tcp for TCP, :udp or any other value for UDP
+  # @param [Symbol] protocol :tcp for TCP, :udp or any other value for UDP
   def initialize(host = '127.0.0.1', port = 8125, protocol = :udp)
     @host = host || '127.0.0.1'
     @port = port || 8125
