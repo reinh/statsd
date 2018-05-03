@@ -2,6 +2,8 @@ require 'socket'
 require 'forwardable'
 require 'json'
 
+require 'statsd/monotonic_time'
+
 # = Statsd: A Statsd client (https://github.com/etsy/statsd)
 #
 # @example Set up a global Statsd client for a server on localhost:8125
@@ -408,10 +410,10 @@ class Statsd
   # @example Report the time (in ms) taken to activate an account
   #   $statsd.time('account.activate') { @account.activate! }
   def time(stat, sample_rate=1)
-    start = Time.now
+    start = MonotonicTime.time_in_ms
     result = yield
   ensure
-    timing(stat, ((Time.now - start) * 1000).round, sample_rate)
+    timing(stat, (MonotonicTime.time_in_ms - start).round, sample_rate)
     result
   end
 
