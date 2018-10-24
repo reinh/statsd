@@ -363,6 +363,10 @@ describe Statsd do
       assert_nil @statsd.batch_byte_size
     end
 
+    it "should have a default flush interval of nil" do
+      assert_nil @statsd.flush_interval
+    end
+
     it "should have a modifiable batch size" do
       @statsd.batch_size = 7
       @statsd.batch_size.must_equal 7
@@ -377,6 +381,14 @@ describe Statsd do
         b.batch_byte_size.must_equal 1472
       end
 
+    end
+
+    it 'should have a modifiable flush interval' do
+      @statsd.flush_interval = 1
+      @statsd.flush_interval.must_equal 1
+      @statsd.batch do |b|
+        b.flush_interval.must_equal 1
+      end
     end
 
     it "should flush the batch at the batch size or at the end of the block" do
@@ -413,12 +425,28 @@ describe Statsd do
         b.batch_size = nil
         b.batch_byte_size = 21
 
-        # The first two should flush, the last will be flushed when the
-        # block is done.
+        # The first two should flush together
         2.times { b.increment('foobar') }
 
         @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
       end
+    end
+
+    it "should flush when the interval has passed" do
+      @statsd.batch do |b|
+        b.batch_size = nil
+        b.flush_interval = 2
+
+        # The first two should flush, the last will be flushed when the
+        # block is done.
+        2.times { b.increment('foobar') }
+        sleep(3)
+        b.increment('foobar')
+
+        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+      end
+
+      @socket.recv.must_equal ["foobar:1|c"]
     end
 
     it "should not flush to the socket if the backlog is empty" do
