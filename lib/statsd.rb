@@ -55,15 +55,17 @@ class Statsd
       :postfix,
       :delimiter, :delimiter=
 
-    attr_accessor :batch_size, :batch_byte_size
+    attr_accessor :batch_size, :batch_byte_size, :flush_interval
 
     # @param [Statsd] statsd requires a configured Statsd instance
     def initialize(statsd)
       @statsd = statsd
       @batch_size = statsd.batch_size
       @batch_byte_size = statsd.batch_byte_size
+      @flush_interval = statsd.flush_interval
       @backlog = []
       @backlog_bytesize = 0
+      @last_flush = Time.now
     end
 
     # @yield [Batch] yields itself
@@ -82,6 +84,7 @@ class Statsd
         @statsd.send_to_socket @backlog.join("\n")
         @backlog.clear
         @backlog_bytesize = 0
+        @last_flush = Time.now
       end
     end
 
@@ -91,8 +94,9 @@ class Statsd
       # this message wouldn't fit; flush the queue. note that we don't have
       # to do this for message based flushing, because we're incrementing by
       # one, so the post-queue check will always catch it
-      if (@batch_byte_size && @backlog_bytesize + message.bytesize + 1 > @batch_byte_size)
-        flush
+      if (@batch_byte_size && @backlog_bytesize + message.bytesize + 1 > @batch_byte_size) ||
+          (@flush_interval && last_flush_seconds_ago >= @flush_interval)
+        flush 
       end
       @backlog << message
       @backlog_bytesize += message.bytesize
@@ -103,6 +107,10 @@ class Statsd
           (@batch_byte_size && @backlog_bytesize == @batch_byte_size)
         flush
       end
+    end
+
+    def last_flush_seconds_ago
+      Time.now - @last_flush
     end
 
   end
@@ -266,6 +274,9 @@ class Statsd
   # The default batch size, in bytes, for new batches (default: default nil; use batch_size)
   attr_accessor :batch_byte_size
 
+  # The flush interval, in seconds, for new batches (default: nil)
+  attr_accessor :flush_interval
+
   # a postfix to append to all metrics
   attr_reader :postfix
 
@@ -287,6 +298,7 @@ class Statsd
     @prefix = nil
     @batch_size = 10
     @batch_byte_size = nil
+    @flush_interval = nil
     @postfix = nil
     @socket = nil
     @protocol = protocol || :udp
