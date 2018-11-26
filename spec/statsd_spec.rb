@@ -95,6 +95,21 @@ describe Statsd do
         @socket.recv.must_equal ['foobar:1|c|@0.5']
       end
     end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.increment('foobar', ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:1|c|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.increment('foobar', 0.5, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:1|c|@0.5|#result:success,type:first']
+      end
+    end
   end
 
   describe "#decrement" do
@@ -108,6 +123,21 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.decrement('foobar', 0.5)
         @socket.recv.must_equal ['foobar:-1|c|@0.5']
+      end
+    end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.decrement('foobar', ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:-1|c|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.decrement('foobar', 0.5, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:-1|c|@0.5|#result:success,type:first']
       end
     end
   end
@@ -127,6 +157,21 @@ describe Statsd do
         @socket.recv.must_equal ['begrutten-suffusion:536|g|@0.1']
       end
     end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.gauge('begrutten-suffusion', 536, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['begrutten-suffusion:536|g|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.gauge('begrutten-suffusion', 536, 0.1, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['begrutten-suffusion:536|g|@0.1|#result:success,type:first']
+      end
+    end
   end
 
   describe "#timing" do
@@ -142,6 +187,21 @@ describe Statsd do
         @socket.recv.must_equal ['foobar:500|ms|@0.5']
       end
     end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.timing('foobar', 500, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:500|ms|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.timing('foobar', 500, 0.5, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:500|ms|@0.5|#result:success,type:first']
+      end
+    end
   end
 
   describe "#set" do
@@ -155,6 +215,21 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.set('foobar', 500, 0.5)
         @socket.recv.must_equal ['foobar:500|s|@0.5']
+      end
+    end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.set('foobar', 500, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:500|s|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.set('foobar', 500, 0.5, ['result:success', 'type:first'])
+        @socket.recv.must_equal ['foobar:500|s|@0.5|#result:success,type:first']
       end
     end
   end
@@ -188,6 +263,21 @@ describe Statsd do
       it "should format the message according to the statsd spec" do
         @statsd.time('foobar', 0.5) { 'test' }
         @socket.recv.must_equal ['foobar:0|ms|@0.5']
+      end
+    end
+
+    describe "with tags" do
+      it "should format the message according to the statsd spec" do
+        @statsd.time('foobar', ['result:success', 'type:first']) { 'test' }
+        @socket.recv.must_equal ['foobar:0|ms|#result:success,type:first']
+      end
+    end
+
+    describe "with a sample rate and tags" do
+      before { class << @statsd; def rand; 0; end; end } # ensure delivery
+      it "should format the message according to the statsd spec" do
+        @statsd.time('foobar', 0.5, ['result:success', 'type:first']) { 'test' }
+        @socket.recv.must_equal ['foobar:0|ms|@0.5|#result:success,type:first']
       end
     end
   end

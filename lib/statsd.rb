@@ -335,18 +335,20 @@ class Statsd
   #
   # @param [String] stat stat name
   # @param [Numeric] sample_rate sample rate, 1 for always
+  # @param [Array] tags array of tag strings to add to metric
   # @see #count
-  def increment(stat, sample_rate=1)
-    count stat, 1, sample_rate
+  def increment(stat, sample_rate=1, tags=nil)
+    count stat, 1, sample_rate, tags
   end
 
   # Sends a decrement (count = -1) for the given stat to the statsd server.
   #
   # @param [String] stat stat name
   # @param [Numeric] sample_rate sample rate, 1 for always
+  # @param [Array] tags array of tag strings to add to metric
   # @see #count
-  def decrement(stat, sample_rate=1)
-    count stat, -1, sample_rate
+  def decrement(stat, sample_rate=1, tags=nil)
+    count stat, -1, sample_rate, tags
   end
 
   # Sends an arbitrary count for the given stat to the statsd server.
@@ -354,8 +356,9 @@ class Statsd
   # @param [String] stat stat name
   # @param [Integer] count count
   # @param [Numeric] sample_rate sample rate, 1 for always
-  def count(stat, count, sample_rate=1)
-    send_stats stat, count, :c, sample_rate
+  # @param [Array] tags array of tag strings to add to metric
+  def count(stat, count, sample_rate=1, tags=nil)
+    send_stats stat, count, :c, sample_rate, tags
   end
 
   # Sends an arbitary gauge value for the given stat to the statsd server.
@@ -367,10 +370,11 @@ class Statsd
   # @param [String] stat stat name.
   # @param [Numeric] value gauge value.
   # @param [Numeric] sample_rate sample rate, 1 for always
+  # @param [Array] tags array of tag strings to add to metric
   # @example Report the current user count:
   #   $statsd.gauge('user.count', User.count)
-  def gauge(stat, value, sample_rate=1)
-    send_stats stat, value, :g, sample_rate
+  def gauge(stat, value, sample_rate=1, tags=nil)
+    send_stats stat, value, :g, sample_rate, tags
   end
 
   # Sends an arbitary set value for the given stat to the statsd server.
@@ -383,10 +387,11 @@ class Statsd
   # @param [String] stat stat name.
   # @param [Numeric] value event value.
   # @param [Numeric] sample_rate sample rate, 1 for always
+  # @param [Array] tags array of tag strings to add to metric
   # @example Report a deployment happening:
   #   $statsd.set('deployment', DEPLOYMENT_EVENT_CODE)
-  def set(stat, value, sample_rate=1)
-    send_stats stat, value, :s, sample_rate
+  def set(stat, value, sample_rate=1, tags=nil)
+    send_stats stat, value, :s, sample_rate, tags
   end
 
   # Sends a timing (in ms) for the given stat to the statsd server. The
@@ -397,23 +402,25 @@ class Statsd
   # @param [String] stat stat name
   # @param [Integer] ms timing in milliseconds
   # @param [Numeric] sample_rate sample rate, 1 for always
-  def timing(stat, ms, sample_rate=1)
-    send_stats stat, ms, :ms, sample_rate
+  # @param [Array] tags array of tag strings to add to metric
+  def timing(stat, ms, sample_rate=1, tags=nil)
+    send_stats stat, ms, :ms, sample_rate, tags
   end
 
   # Reports execution time of the provided block using {#timing}.
   #
   # @param [String] stat stat name
   # @param [Numeric] sample_rate sample rate, 1 for always
+  # @param [Array] tags array of tag strings to add to metric
   # @yield The operation to be timed
   # @see #timing
   # @example Report the time (in ms) taken to activate an account
   #   $statsd.time('account.activate') { @account.activate! }
-  def time(stat, sample_rate=1)
+  def time(stat, sample_rate=1, tags=nil)
     start = MonotonicTime.time_in_ms
     result = yield
   ensure
-    timing(stat, (MonotonicTime.time_in_ms - start).round, sample_rate)
+    timing(stat, (MonotonicTime.time_in_ms - start).round, sample_rate, tags)
     result
   end
 
@@ -482,12 +489,18 @@ class Statsd
 
   private
 
-  def send_stats(stat, delta, type, sample_rate=1)
+  def send_stats(stat, delta, type, sample_rate=1, tags=nil)
+    if sample_rate.kind_of?(Array)
+      tags = sample_rate
+      sample_rate = 1
+    end
+
     if sample_rate == 1 or rand < sample_rate
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
       stat = stat.to_s.gsub('::', delimiter).tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
-      send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}"
+      tag_list = "|##{tags.join(",")}" if tags
+      send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}#{tag_list}"
     end
   end
 
