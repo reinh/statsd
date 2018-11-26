@@ -27,6 +27,10 @@ Bundler:
   statsd = Statsd.new('localhost').tap{|sd| sd.namespace = 'account'}
   statsd.increment 'activate'
 
+  # Include tags with metrics
+  statsd.global_tags = ['system:api']
+  statsd.increment 'activate', ['result:success']
+
 = Testing
 
 Run the specs with <tt>rake spec</tt>
