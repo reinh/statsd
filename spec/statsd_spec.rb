@@ -427,6 +427,20 @@ describe Statsd do
     end
   end
 
+  describe "with global tags" do
+    before { @statsd.global_tags = ['service:api','host:sirius'] }
+
+    it "should add global tags to measurement" do
+      @statsd.increment('foobar')
+      @socket.recv.must_equal ['foobar:1|c|#service:api,host:sirius']
+    end
+
+    it "should combine tags with global tags" do
+      @statsd.decrement('foobar', ['result:success'])
+      @socket.recv.must_equal ['foobar:-1|c|#result:success,service:api,host:sirius']
+    end
+  end
+
   describe "handling socket errors" do
     before do
       require 'stringio'

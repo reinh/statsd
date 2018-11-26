@@ -53,7 +53,8 @@ class Statsd
       :port, :port=,
       :prefix,
       :postfix,
-      :delimiter, :delimiter=
+      :delimiter, :delimiter=,
+      :global_tags, :global_tags=
 
     attr_accessor :batch_size, :batch_byte_size
 
@@ -272,6 +273,9 @@ class Statsd
   # The replacement of :: on ruby module names when transformed to statsd metric names
   attr_reader :delimiter
 
+  # An array of string tags to add to every measurement
+  attr_accessor :global_tags
+
   class << self
     # Set to a standard logger instance to enable debug logging.
     attr_accessor :logger
@@ -290,6 +294,7 @@ class Statsd
     @postfix = nil
     @socket = nil
     @protocol = protocol || :udp
+    @global_tags = nil
     @s_mu = Mutex.new
     connect
   end
@@ -499,7 +504,7 @@ class Statsd
       # Replace Ruby module scoping with '.' and reserved chars (: | @) with underscores.
       stat = stat.to_s.gsub('::', delimiter).tr(':|@', '_')
       rate = "|@#{sample_rate}" unless sample_rate == 1
-      tag_list = "|##{tags.join(",")}" if tags
+      tag_list = "|##{[*tags, *global_tags].join(",")}" if tags || global_tags
       send_to_socket "#{prefix}#{stat}#{postfix}:#{delta}|#{type}#{rate}#{tag_list}"
     end
   end
