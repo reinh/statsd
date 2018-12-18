@@ -2,20 +2,18 @@
 language: ruby
 
 rvm:
-  - 2.0.0
   - 2.1
   - 2.2
-  - 2.3.0
-  - 2.4.0
-  - rbx-2
+  - 2.3
+  - 2.4
+  - 2.5
+  - rbx-3
   - jruby
   - ruby-head
 
-sudo: false
-
 matrix:
   allow_failures:
-    - rvm: rbx-2
+    - rvm: rbx-3
     - rvm: ruby-head
     - rvm: jruby
     - rvm: jruby-head
