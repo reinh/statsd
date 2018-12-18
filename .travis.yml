@@ -1,6 +1,8 @@
 ---
 language: ruby
 
+dist: xenial
+
 rvm:
   - 2.1
   - 2.2
