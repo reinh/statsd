@@ -27,6 +27,7 @@ jobs:
           EOF
           sudo service docker restart
   ruby-2.5: &test-template
+    requires: enable-ipv6
     docker:
       - image: circleci/ruby:2.5
         environment: # environment variables for primary container
