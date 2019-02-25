@@ -3,6 +3,7 @@ workflows:
   version: 2
   test:
     jobs:
+      - enable-ipv6
       # - ruby-2.1
       # - ruby-2.2
       # - ruby-2.3
@@ -12,6 +13,16 @@ workflows:
       # - ruby-jruby
       # - ruby-ruby-head
 jobs:
+  enable-ipv6:
+    - run:
+      name: enable ipv6
+      command: |
+        cat <<'EOF' | sudo tee /etc/docker/daemon.json
+        {
+          "ipv6": true
+        }
+        EOF
+        sudo service docker restart
   ruby-2.5: &test-template
     docker:
       - image: circleci/ruby:2.5
@@ -21,15 +32,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run:
-          name: enable ipv6
-          command: |
-            cat <<'EOF' | sudo tee /etc/docker/daemon.json
-            {
-              "ipv6": true
-            }
-            EOF
-            sudo service docker restart
       - run:
           name: Which bundler?
           command: bundle -v
