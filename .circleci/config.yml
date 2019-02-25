@@ -22,6 +22,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: enable ipv6
+          command: |
+            cat <<'EOF' | sudo tee /etc/docker/daemon.json
+            {
+              "ipv6": true
+            }
+            EOF
+            sudo service docker restart
+      - run:
           name: Which bundler?
           command: bundle -v
       # Restore bundle cache
