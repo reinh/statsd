@@ -8,7 +8,9 @@ workflows:
       # - ruby-2.2
       # - ruby-2.3
       # - ruby-2.4
-      - ruby-2.5
+      - ruby-2.5:
+          requires:
+            - enable-ipv6
       # - ruby-rbx-3
       # - ruby-jruby
       # - ruby-ruby-head
@@ -27,7 +29,6 @@ jobs:
           EOF
           sudo service docker restart
   ruby-2.5: &test-template
-    requires: enable-ipv6
     docker:
       - image: circleci/ruby:2.5
         environment: # environment variables for primary container
