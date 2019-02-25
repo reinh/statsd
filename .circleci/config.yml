@@ -1,0 +1,55 @@
+version: 2
+workflows:
+  version: 2
+  test:
+    jobs:
+      # - ruby-2.1
+      # - ruby-2.2
+      # - ruby-2.3
+      # - ruby-2.4
+      - ruby-2.5
+      # - ruby-rbx-3
+      # - ruby-jruby
+      # - ruby-ruby-head
+jobs:
+  test-2.5: &test-template
+    parallelism: 3
+    docker:
+      - image: circleci/ruby:2.5
+        environment: # environment variables for primary container
+          BUNDLE_JOBS: 3
+          BUNDLE_RETRY: 3
+          BUNDLE_PATH: vendor/bundle
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Which bundler?
+          command: bundle -v
+      - run:
+          name: Install dependencies
+      # Restore bundle cache
+      # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+      - restore_cache:
+          keys:
+            - rails-demo-bundle-v2-{{ checksum "Gemfile.lock" }}
+            - rails-demo-bundle-v2-
+      - run: # Install Ruby dependencies
+          name: Bundle Install
+          command: bundle check || bundle install
+      # Store bundle cache for Ruby dependencies
+      - save_cache:
+          key: rails-demo-bundle-v2-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      - run:
+          name: Run rspec in parallel
+          command: |
+            bundle exec rspec --profile 10 \
+                              --format RspecJunitFormatter \
+                              --out test_results/rspec.xml \
+                              --format progress \
+                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+      # Save test results for timing analysis
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test_results
