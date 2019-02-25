@@ -14,15 +14,18 @@ workflows:
       # - ruby-ruby-head
 jobs:
   enable-ipv6:
+    machine: true
+    steps:
     - run:
-      name: enable ipv6
-      command: |
-        cat <<'EOF' | sudo tee /etc/docker/daemon.json
-        {
-          "ipv6": true
-        }
-        EOF
-        sudo service docker restart
+        name: enable ipv6
+        command: |
+          cat <<'EOF' | sudo tee /etc/docker/daemon.json
+          {
+            "ipv6": true,
+            "fixed-cidr-v6": "2001:db8:1::/64"
+          }
+          EOF
+          sudo service docker restart
   ruby-2.5: &test-template
     docker:
       - image: circleci/ruby:2.5
