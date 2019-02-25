@@ -12,7 +12,7 @@ workflows:
       # - ruby-jruby
       # - ruby-ruby-head
 jobs:
-  test-2.5: &test-template
+  ruby-2.5: &test-template
     parallelism: 3
     docker:
       - image: circleci/ruby:2.5
