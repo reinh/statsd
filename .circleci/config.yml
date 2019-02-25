@@ -26,15 +26,14 @@ jobs:
       - run:
           name: Which bundler?
           command: bundle -v
-      - run:
-          name: Install dependencies
       # Restore bundle cache
       # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
       - restore_cache:
           keys:
             - rails-demo-bundle-v2-{{ checksum "Gemfile.lock" }}
             - rails-demo-bundle-v2-
-      - run: # Install Ruby dependencies
+      # Install Ruby dependencies
+      - run:
           name: Bundle Install
           command: bundle check || bundle install
       # Store bundle cache for Ruby dependencies
