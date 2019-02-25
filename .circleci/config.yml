@@ -13,11 +13,9 @@ workflows:
       # - ruby-ruby-head
 jobs:
   ruby-2.5: &test-template
-    parallelism: 3
     docker:
       - image: circleci/ruby:2.5
         environment: # environment variables for primary container
-          BUNDLE_JOBS: 3
           BUNDLE_RETRY: 3
           BUNDLE_PATH: vendor/bundle
     working_directory: ~/repo
@@ -42,13 +40,5 @@ jobs:
           paths:
             - vendor/bundle
       - run:
-          name: Run rspec in parallel
-          command: |
-            bundle exec rspec --profile 10 \
-                              --format RspecJunitFormatter \
-                              --out test_results/rspec.xml \
-                              --format progress \
-                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
-      # Save test results for timing analysis
-      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-          path: test_results
+          name: Run tests
+          command: bundle exec rake spec
