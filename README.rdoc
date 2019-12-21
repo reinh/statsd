@@ -33,7 +33,7 @@ Run the specs with <tt>rake spec</tt>
 
 = Performance
 
-* A short note about DNS: If you use a dns name for the host option, then you will want to use a local caching dns service for optimial performance (e.g. nscd).
+* A short note about DNS: If you use a dns name for the host option, then you will want to use a local caching dns service for optimal performance (e.g. nscd).
 
 = Extensions / Libraries / Extra Docs
 
