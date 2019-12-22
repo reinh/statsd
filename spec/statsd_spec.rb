@@ -435,12 +435,12 @@ describe Statsd do
     it "should flush when the interval has passed" do
       @statsd.batch do |b|
         b.batch_size = nil
-        b.flush_interval = 2
+        b.flush_interval = 0.01
 
         # The first two should flush, the last will be flushed when the
         # block is done.
         2.times { b.increment('foobar') }
-        sleep(3)
+        sleep(0.03)
         b.increment('foobar')
 
         @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
