@@ -29,6 +29,6 @@ jobs:
 
     - name: Build and test with Rake
       run: |
-        gem install bundler --no-rdoc --no-ri
-        bundle install --jobs 4 --retry 3
+        gem install bundler
+        bundle install
         bundle exec rake
