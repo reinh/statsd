@@ -1,4 +1,4 @@
-= statsd-ruby {<img src="https://secure.travis-ci.org/reinh/statsd.svg" />}[http://travis-ci.org/reinh/statsd]
+= statsd-ruby Travis: {<img src="https://secure.travis-ci.org/reinh/statsd.svg" />}[http://travis-ci.org/reinh/statsd] CI: {<img src="https://github.com/reinh/statsd/workflows/Ruby/badge.svg" />}[https://github.com/reinh/statsd/actions?query=workflow%3ARuby]
 
 A Ruby client for {StatsD}[https://github.com/etsy/statsd]
 
