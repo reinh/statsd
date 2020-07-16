@@ -70,12 +70,12 @@ describe Statsd do
     end
   end
 
-  describe "#delimiter" do 
+  describe "#delimiter" do
     it "should set delimiter" do
       @statsd.delimiter = "-"
       @statsd.delimiter.must_equal "-"
     end
-    
+
     it "should set default to period if not given a value" do
       @statsd.delimiter = nil
       @statsd.delimiter.must_equal "."
@@ -559,7 +559,7 @@ describe Statsd do
         end
 
         message = socket.recvfrom(16).first
-        message.must_equal 'foobar:1|c'
+        message.must_equal "foobar:1|c\n"
       ensure
         socket.close if socket
         server.close
@@ -583,7 +583,7 @@ describe Statsd do
         end
 
         message = socket.recvfrom(16).first
-        message.must_equal 'foobar:1|c'
+        message.must_equal "foobar:1|c\n"
       ensure
         socket.close if socket
         server.close
