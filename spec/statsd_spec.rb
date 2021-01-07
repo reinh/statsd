@@ -26,18 +26,18 @@ describe Statsd do
 
   describe "#initialize" do
     it "should set the host and port" do
-      @statsd.host.must_equal 'localhost'
-      @statsd.port.must_equal 1234
+      _(@statsd.host).must_equal 'localhost'
+      _(@statsd.port).must_equal 1234
     end
 
     it "should default the host to 127.0.0.1 and port to 8125" do
       statsd = Statsd.new
-      statsd.host.must_equal '127.0.0.1'
-      statsd.port.must_equal 8125
+      _(statsd.host).must_equal '127.0.0.1'
+      _(statsd.port).must_equal 8125
     end
 
     it "should set delimiter to period by default" do
-      @statsd.delimiter.must_equal "."
+      _(@statsd.delimiter).must_equal "."
     end
   end
 
@@ -45,54 +45,54 @@ describe Statsd do
     it "should set host and port" do
       @statsd.host = '1.2.3.4'
       @statsd.port = 5678
-      @statsd.host.must_equal '1.2.3.4'
-      @statsd.port.must_equal 5678
+      _(@statsd.host).must_equal '1.2.3.4'
+      _(@statsd.port).must_equal 5678
     end
 
     it "should not resolve hostnames to IPs" do
       @statsd.host = 'localhost'
-      @statsd.host.must_equal 'localhost'
+      _(@statsd.host).must_equal 'localhost'
     end
 
     it "should set nil host to default" do
       @statsd.host = nil
-      @statsd.host.must_equal '127.0.0.1'
+      _(@statsd.host).must_equal '127.0.0.1'
     end
 
     it "should set nil port to default" do
       @statsd.port = nil
-      @statsd.port.must_equal 8125
+      _(@statsd.port).must_equal 8125
     end
 
     it "should allow an IPv6 address" do
       @statsd.host = '::1'
-      @statsd.host.must_equal '::1'
+      _(@statsd.host).must_equal '::1'
     end
   end
 
   describe "#delimiter" do
     it "should set delimiter" do
       @statsd.delimiter = "-"
-      @statsd.delimiter.must_equal "-"
+      _(@statsd.delimiter).must_equal "-"
     end
 
     it "should set default to period if not given a value" do
       @statsd.delimiter = nil
-      @statsd.delimiter.must_equal "."
+      _(@statsd.delimiter).must_equal "."
     end
   end
 
   describe "#increment" do
     it "should format the message according to the statsd spec" do
       @statsd.increment('foobar')
-      @socket.recv.must_equal ['foobar:1|c']
+      _(@socket.recv).must_equal ['foobar:1|c']
     end
 
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should format the message according to the statsd spec" do
         @statsd.increment('foobar', 0.5)
-        @socket.recv.must_equal ['foobar:1|c|@0.5']
+        _(@socket.recv).must_equal ['foobar:1|c|@0.5']
       end
     end
   end
@@ -100,14 +100,14 @@ describe Statsd do
   describe "#decrement" do
     it "should format the message according to the statsd spec" do
       @statsd.decrement('foobar')
-      @socket.recv.must_equal ['foobar:-1|c']
+      _(@socket.recv).must_equal ['foobar:-1|c']
     end
 
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should format the message according to the statsd spec" do
         @statsd.decrement('foobar', 0.5)
-        @socket.recv.must_equal ['foobar:-1|c|@0.5']
+        _(@socket.recv).must_equal ['foobar:-1|c|@0.5']
       end
     end
   end
@@ -115,16 +115,16 @@ describe Statsd do
   describe "#gauge" do
     it "should send a message with a 'g' type, per the nearbuy fork" do
       @statsd.gauge('begrutten-suffusion', 536)
-      @socket.recv.must_equal ['begrutten-suffusion:536|g']
+      _(@socket.recv).must_equal ['begrutten-suffusion:536|g']
       @statsd.gauge('begrutten-suffusion', -107.3)
-      @socket.recv.must_equal ['begrutten-suffusion:-107.3|g']
+      _(@socket.recv).must_equal ['begrutten-suffusion:-107.3|g']
     end
 
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should format the message according to the statsd spec" do
         @statsd.gauge('begrutten-suffusion', 536, 0.1)
-        @socket.recv.must_equal ['begrutten-suffusion:536|g|@0.1']
+        _(@socket.recv).must_equal ['begrutten-suffusion:536|g|@0.1']
       end
     end
   end
@@ -132,14 +132,14 @@ describe Statsd do
   describe "#timing" do
     it "should format the message according to the statsd spec" do
       @statsd.timing('foobar', 500)
-      @socket.recv.must_equal ['foobar:500|ms']
+      _(@socket.recv).must_equal ['foobar:500|ms']
     end
 
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should format the message according to the statsd spec" do
         @statsd.timing('foobar', 500, 0.5)
-        @socket.recv.must_equal ['foobar:500|ms|@0.5']
+        _(@socket.recv).must_equal ['foobar:500|ms|@0.5']
       end
     end
   end
@@ -147,14 +147,14 @@ describe Statsd do
   describe "#set" do
     it "should format the message according to the statsd spec" do
       @statsd.set('foobar', 765)
-      @socket.recv.must_equal ['foobar:765|s']
+      _(@socket.recv).must_equal ['foobar:765|s']
     end
 
     describe "with a sample rate" do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should format the message according to the statsd spec" do
         @statsd.set('foobar', 500, 0.5)
-        @socket.recv.must_equal ['foobar:500|s|@0.5']
+        _(@socket.recv).must_equal ['foobar:500|s|@0.5']
       end
     end
   end
@@ -162,23 +162,23 @@ describe Statsd do
   describe "#time" do
     it "should format the message according to the statsd spec" do
       @statsd.time('foobar') { 'test' }
-      @socket.recv.must_equal ['foobar:0|ms']
+      _(@socket.recv).must_equal ['foobar:0|ms']
     end
 
     it "should return the result of the block" do
       result = @statsd.time('foobar') { 'test' }
-      result.must_equal 'test'
+      _(result).must_equal 'test'
     end
 
     describe "when given a block with an explicit return" do
       it "should format the message according to the statsd spec" do
         lambda { @statsd.time('foobar') { return 'test' } }.call
-        @socket.recv.must_equal ['foobar:0|ms']
+        _(@socket.recv).must_equal ['foobar:0|ms']
       end
 
       it "should return the result of the block" do
         result = lambda { @statsd.time('foobar') { return 'test' } }.call
-        result.must_equal 'test'
+        _(result).must_equal 'test'
       end
     end
 
@@ -187,7 +187,7 @@ describe Statsd do
 
       it "should format the message according to the statsd spec" do
         @statsd.time('foobar', 0.5) { 'test' }
-        @socket.recv.must_equal ['foobar:0|ms|@0.5']
+        _(@socket.recv).must_equal ['foobar:0|ms|@0.5']
       end
     end
   end
@@ -197,7 +197,7 @@ describe Statsd do
       before { class << @statsd; def rand; raise end; end }
       it "should send" do
         @statsd.timing('foobar', 500, 1)
-        @socket.recv.must_equal ['foobar:500|ms']
+        _(@socket.recv).must_equal ['foobar:500|ms']
       end
     end
 
@@ -205,7 +205,7 @@ describe Statsd do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should send" do
         @statsd.timing('foobar', 500, 0.5)
-        @socket.recv.must_equal ['foobar:500|ms|@0.5']
+        _(@socket.recv).must_equal ['foobar:500|ms|@0.5']
       end
     end
 
@@ -220,7 +220,7 @@ describe Statsd do
       before { class << @statsd; def rand; 0; end; end } # ensure delivery
       it "should send" do
         @statsd.timing('foobar', 500, 0.5)
-        @socket.recv.must_equal ['foobar:500|ms|@0.5']
+        _(@socket.recv).must_equal ['foobar:500|ms|@0.5']
       end
     end
   end
@@ -230,22 +230,22 @@ describe Statsd do
 
     it "should add namespace to increment" do
       @statsd.increment('foobar')
-      @socket.recv.must_equal ['service.foobar:1|c']
+      _(@socket.recv).must_equal ['service.foobar:1|c']
     end
 
     it "should add namespace to decrement" do
       @statsd.decrement('foobar')
-      @socket.recv.must_equal ['service.foobar:-1|c']
+      _(@socket.recv).must_equal ['service.foobar:-1|c']
     end
 
     it "should add namespace to timing" do
       @statsd.timing('foobar', 500)
-      @socket.recv.must_equal ['service.foobar:500|ms']
+      _(@socket.recv).must_equal ['service.foobar:500|ms']
     end
 
     it "should add namespace to gauge" do
       @statsd.gauge('foobar', 500)
-      @socket.recv.must_equal ['service.foobar:500|g']
+      _(@socket.recv).must_equal ['service.foobar:500|g']
     end
   end
 
@@ -254,22 +254,22 @@ describe Statsd do
 
     it "should add postfix to increment" do
       @statsd.increment('foobar')
-      @socket.recv.must_equal ['foobar.ip-23-45-56-78:1|c']
+      _(@socket.recv).must_equal ['foobar.ip-23-45-56-78:1|c']
     end
 
     it "should add postfix to decrement" do
       @statsd.decrement('foobar')
-      @socket.recv.must_equal ['foobar.ip-23-45-56-78:-1|c']
+      _(@socket.recv).must_equal ['foobar.ip-23-45-56-78:-1|c']
     end
 
     it "should add namespace to timing" do
       @statsd.timing('foobar', 500)
-      @socket.recv.must_equal ['foobar.ip-23-45-56-78:500|ms']
+      _(@socket.recv).must_equal ['foobar.ip-23-45-56-78:500|ms']
     end
 
     it "should add namespace to gauge" do
       @statsd.gauge('foobar', 500)
-      @socket.recv.must_equal ['foobar.ip-23-45-56-78:500|g']
+      _(@socket.recv).must_equal ['foobar.ip-23-45-56-78:500|g']
     end
   end
 
@@ -294,7 +294,7 @@ describe Statsd do
 
       @statsd.increment('foobar')
 
-      @log.string.must_match "Statsd: foobar:1|c"
+      _(@log.string).must_match "Statsd: foobar:1|c"
     end
 
     it "should not write to the log unless debug" do
@@ -302,7 +302,7 @@ describe Statsd do
 
       @statsd.increment('foobar')
 
-      @log.string.must_be_empty
+      _(@log.string).must_be_empty
     end
   end
 
@@ -315,7 +315,7 @@ describe Statsd do
       class Statsd::SomeClass; end
       @statsd.increment(Statsd::SomeClass, 1)
 
-      @socket.recv.must_equal ['Statsd.SomeClass:1|c']
+      _(@socket.recv).must_equal ['Statsd.SomeClass:1|c']
     end
 
     describe "custom delimiter" do
@@ -327,13 +327,13 @@ describe Statsd do
         class Statsd::SomeOtherClass; end
         @statsd.increment(Statsd::SomeOtherClass, 1)
 
-        @socket.recv.must_equal ['Statsd-SomeOtherClass:1|c']
+        _(@socket.recv).must_equal ['Statsd-SomeOtherClass:1|c']
       end
     end
 
     it "should replace statsd reserved chars in the stat name" do
       @statsd.increment('ray@hostname.blah|blah.blah:blah', 1)
-      @socket.recv.must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
+      _(@socket.recv).must_equal ['ray_hostname.blah_blah.blah_blah:1|c']
     end
   end
 
@@ -350,13 +350,13 @@ describe Statsd do
 
     it "should log socket errors" do
       @statsd.increment('foobar')
-      @log.string.must_match 'Statsd: SocketError'
+      _(@log.string).must_match 'Statsd: SocketError'
     end
   end
 
   describe "batching" do
     it "should have a default batch size of 10" do
-      @statsd.batch_size.must_equal 10
+      _(@statsd.batch_size).must_equal 10
     end
 
     it "should have a default batch byte size of nil" do
@@ -369,25 +369,25 @@ describe Statsd do
 
     it "should have a modifiable batch size" do
       @statsd.batch_size = 7
-      @statsd.batch_size.must_equal 7
+      _(@statsd.batch_size).must_equal 7
       @statsd.batch do |b|
-        b.batch_size.must_equal 7
+        _(b.batch_size).must_equal 7
       end
 
       @statsd.batch_size = nil
       @statsd.batch_byte_size = 1472
       @statsd.batch do |b|
         assert_nil b.batch_size
-        b.batch_byte_size.must_equal 1472
+        _(b.batch_byte_size).must_equal 1472
       end
 
     end
 
     it 'should have a modifiable flush interval' do
       @statsd.flush_interval = 1
-      @statsd.flush_interval.must_equal 1
+      _(@statsd.flush_interval).must_equal 1
       @statsd.batch do |b|
-        b.flush_interval.must_equal 1
+        _(b.flush_interval).must_equal 1
       end
     end
 
@@ -399,10 +399,10 @@ describe Statsd do
         # block is done.
         5.times { b.increment('foobar') }
 
-        @socket.recv.must_equal [(["foobar:1|c"] * 3).join("\n")]
+        _(@socket.recv).must_equal [(["foobar:1|c"] * 3).join("\n")]
       end
 
-      @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+      _(@socket.recv).must_equal [(["foobar:1|c"] * 2).join("\n")]
     end
 
     it "should flush based on batch byte size" do
@@ -414,10 +414,10 @@ describe Statsd do
         # block is done.
         3.times { b.increment('foobar') }
 
-        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+        _(@socket.recv).must_equal [(["foobar:1|c"] * 2).join("\n")]
       end
 
-      @socket.recv.must_equal ["foobar:1|c"]
+      _(@socket.recv).must_equal ["foobar:1|c"]
     end
 
     it "should flush immediately when the queue is exactly a batch size" do
@@ -428,7 +428,7 @@ describe Statsd do
         # The first two should flush together
         2.times { b.increment('foobar') }
 
-        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+        _(@socket.recv).must_equal [(["foobar:1|c"] * 2).join("\n")]
       end
     end
 
@@ -443,38 +443,38 @@ describe Statsd do
         sleep(0.03)
         b.increment('foobar')
 
-        @socket.recv.must_equal [(["foobar:1|c"] * 2).join("\n")]
+        _(@socket.recv).must_equal [(["foobar:1|c"] * 2).join("\n")]
       end
 
-      @socket.recv.must_equal ["foobar:1|c"]
+      _(@socket.recv).must_equal ["foobar:1|c"]
     end
 
     it "should not flush to the socket if the backlog is empty" do
       batch = Statsd::Batch.new(@statsd)
       batch.flush
-      @socket.recv.must_be :nil?
+      _(@socket.recv).must_be :nil?
 
       batch.increment 'foobar'
       batch.flush
-      @socket.recv.must_equal %w[foobar:1|c]
+      _(@socket.recv).must_equal %w[foobar:1|c]
     end
 
     it "should support setting namespace for the underlying instance" do
       batch = Statsd::Batch.new(@statsd)
       batch.namespace = 'ns'
-      @statsd.namespace.must_equal 'ns'
+      _(@statsd.namespace).must_equal 'ns'
     end
 
     it "should support setting host for the underlying instance" do
       batch = Statsd::Batch.new(@statsd)
       batch.host = '1.2.3.4'
-      @statsd.host.must_equal '1.2.3.4'
+      _(@statsd.host).must_equal '1.2.3.4'
     end
 
     it "should support setting port for the underlying instance" do
       batch = Statsd::Batch.new(@statsd)
       batch.port = 42
-      @statsd.port.must_equal 42
+      _(@statsd.port).must_equal 42
     end
 
   end
@@ -483,7 +483,7 @@ describe Statsd do
     it "should reconnect" do
       c = $connect_count
       @statsd.connect
-      ($connect_count - c).must_equal 1
+      _(($connect_count - c)).must_equal 1
     end
   end
 
@@ -502,7 +502,7 @@ describe Statsd do
         statsd = Statsd.new(host, port)
         statsd.increment('foobar')
         message = socket.recvfrom(16).first
-        message.must_equal 'foobar:1|c'
+        _(message).must_equal 'foobar:1|c'
       ensure
         socket.close
       end
@@ -518,7 +518,7 @@ describe Statsd do
         statsd = Statsd.new(host, port)
         statsd.increment('foobar')
         message = socket.recvfrom(16).first
-        message.must_equal 'foobar:1|c'
+        _(message).must_equal 'foobar:1|c'
       ensure
         socket.close
       end
@@ -534,7 +534,7 @@ describe Statsd do
         statsd = Statsd.new(host, port)
         statsd.increment('foobar')
         message = socket.recvfrom(16).first
-        message.must_equal 'foobar:1|c'
+        _(message).must_equal 'foobar:1|c'
       ensure
         socket.close
       end
@@ -559,7 +559,7 @@ describe Statsd do
         end
 
         message = socket.recvfrom(16).first
-        message.must_equal "foobar:1|c\n"
+        _(message).must_equal "foobar:1|c\n"
       ensure
         socket.close if socket
         server.close
@@ -583,7 +583,7 @@ describe Statsd do
         end
 
         message = socket.recvfrom(16).first
-        message.must_equal "foobar:1|c\n"
+        _(message).must_equal "foobar:1|c\n"
       ensure
         socket.close if socket
         server.close

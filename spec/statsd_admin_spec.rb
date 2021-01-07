@@ -26,14 +26,14 @@ describe Statsd::Admin do
 
   describe "#initialize" do
     it "should set the host and port" do
-      @admin.host.must_equal 'localhost'
-      @admin.port.must_equal 1234
+      _(@admin.host).must_equal 'localhost'
+      _(@admin.port).must_equal 1234
     end
 
     it "should default the host to 127.0.0.1 and port to 8126" do
       statsd = Statsd::Admin.new
-      statsd.host.must_equal '127.0.0.1'
-      statsd.port.must_equal 8126
+      _(statsd.host).must_equal '127.0.0.1'
+      _(statsd.port).must_equal 8126
     end
   end
 
@@ -41,23 +41,23 @@ describe Statsd::Admin do
     it "should set host and port" do
       @admin.host = '1.2.3.4'
       @admin.port = 5678
-      @admin.host.must_equal '1.2.3.4'
-      @admin.port.must_equal 5678
+      _(@admin.host).must_equal '1.2.3.4'
+      _(@admin.port).must_equal 5678
     end
 
     it "should not resolve hostnames to IPs" do
       @admin.host = 'localhost'
-      @admin.host.must_equal 'localhost'
+      _(@admin.host).must_equal 'localhost'
     end
 
     it "should set nil host to default" do
       @admin.host = nil
-      @admin.host.must_equal '127.0.0.1'
+      _(@admin.host).must_equal '127.0.0.1'
     end
 
     it "should set nil port to default" do
       @admin.port = nil
-      @admin.port.must_equal 8126
+      _(@admin.port).must_equal 8126
     end
   end
 
@@ -71,9 +71,9 @@ describe Statsd::Admin do
           @socket.write line
         end
         result = @admin.send action.to_sym
-        result.must_be_kind_of Hash
-        result.size.must_equal 3
-        @socket.readline.must_equal "#{action}\n"
+        _(result).must_be_kind_of Hash
+        _(result.size).must_equal 3
+        _(@socket.readline).must_equal "#{action}\n"
       end
     end
 
@@ -86,9 +86,9 @@ describe Statsd::Admin do
           @socket.write line
         end
         result = @admin.send "del#{action}", "foo.*"
-        result.must_be_kind_of Array
-        result.size.must_equal 3
-        @socket.readline.must_equal "del#{action} foo.*\n"
+        _(result).must_be_kind_of Array
+        _(result.size).must_equal 3
+        _(@socket.readline).must_equal "del#{action} foo.*\n"
       end
     end
   end
@@ -99,9 +99,9 @@ describe Statsd::Admin do
         @socket.write line
       end
       result = @admin.stats
-      result.must_be_kind_of Hash
-      result["whatever"].must_equal 0
-      @socket.readline.must_equal "stats\n"
+      _(result).must_be_kind_of Hash
+      _(result["whatever"]).must_equal 0
+      _(@socket.readline).must_equal "stats\n"
     end
   end
 
@@ -109,7 +109,7 @@ describe Statsd::Admin do
     it "should reconnect" do
       c = $connect_count
       @admin.connect
-      ($connect_count - c).must_equal 1
+      _(($connect_count - c)).must_equal 1
     end
   end
 end
