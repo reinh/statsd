@@ -341,7 +341,8 @@ describe Statsd do
     before do
       require 'stringio'
       Statsd.logger = Logger.new(@log = StringIO.new)
-      @socket.instance_eval { def write(*) raise SocketError end }
+      @socket.instance_variable_set(:@err_count, 0)
+      @socket.instance_eval { def write(*) @err_count+=1; raise SocketError end }
     end
 
     it "should ignore socket errors" do
@@ -351,6 +352,13 @@ describe Statsd do
     it "should log socket errors" do
       @statsd.increment('foobar')
       _(@log.string).must_match 'Statsd: SocketError'
+    end
+
+    it "should retry and reconnect on socket errors" do
+      $connect_count = 0
+      @statsd.increment('foobar')
+      _(@socket.instance_variable_get(:@err_count)).must_equal 5
+      _($connect_count).must_equal 5
     end
   end
 

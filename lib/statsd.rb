@@ -477,14 +477,14 @@ class Statsd
       # in an inconsistent state if a partial message is written. If that case
       # occurs, the socket is closed down and we retry on a new socket.
       message = @protocol == :tcp ? message + "\n" : message
-      n = socket.write(message)
+      n = socket.write(message) rescue (err = $!; 0)
       if n == message.length
         break
       end
 
       connect
       retries += 1
-      raise "statsd: Failed to send after #{retries} attempts" if retries >= 5
+      raise (err || "statsd: Failed to send after #{retries} attempts") if retries >= 5
     end
     n
   rescue => boom
