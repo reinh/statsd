@@ -28,9 +28,9 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
+        bundler: 2.3.26
 
     - name: Build and test with Rake
       run: |
-        gem install bundler
         bundle install
         bundle exec rake
